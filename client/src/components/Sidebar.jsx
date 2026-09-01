@@ -39,12 +39,26 @@ export default function Sidebar({
       } shrink-0 overflow-hidden transition-[width] duration-200 bg-base-900 border-r border-base-700 flex flex-col`}
     >
       <div className="w-72 flex flex-col h-full">
+        <div className="flex items-center gap-2.5 px-4 pt-4 pb-1">
+          <div className="w-8 h-8 rounded-xl bg-brand-gradient shadow-glow-sm flex items-center justify-center shrink-0">
+            <span className="text-white text-sm font-bold">✦</span>
+          </div>
+          <div className="min-w-0">
+            <p className="font-display font-bold text-sm text-ink-100 leading-tight truncate">
+              Chat Startup
+            </p>
+            <p className="text-[10px] text-ink-500 leading-tight truncate">
+              by <span className="text-gradient-brand font-semibold">Aakara.ai</span>
+            </p>
+          </div>
+        </div>
+
         <div className="p-3">
           <button
             onClick={onNewChat}
-            className="w-full flex items-center gap-2 rounded-xl border border-base-600 bg-base-800 hover:bg-base-700 transition-colors px-3 py-2.5 text-sm font-medium text-ink-100"
+            className="w-full flex items-center justify-center gap-2 rounded-xl bg-brand-gradient hover:opacity-90 transition-opacity shadow-glow-sm px-3 py-2.5 text-sm font-semibold text-white"
           >
-            <span className="text-accent-soft text-base leading-none">＋</span>
+            <span className="text-base leading-none">＋</span>
             New chat
           </button>
         </div>
@@ -61,7 +75,7 @@ export default function Sidebar({
               key={c.id}
               className={`group relative rounded-lg px-3 py-2 cursor-pointer text-sm transition-colors ${
                 c.id === activeId
-                  ? "bg-base-700 text-ink-100"
+                  ? "bg-base-700 text-ink-100 ring-1 ring-accent/40"
                   : "text-ink-300 hover:bg-base-800"
               }`}
               onClick={() => onSelect(c.id)}
@@ -113,11 +127,11 @@ export default function Sidebar({
           ))}
         </nav>
 
-        <div className="p-3 border-t border-base-700">
-          <p className="text-[11px] text-ink-500 leading-relaxed">
-            Powered by <span className="text-ink-300">OpenRouter</span> — swap
-            models per chat, one API key for all of them.
-          </p>
+        <div className="p-3 border-t border-base-700 space-y-2.5">
+          <div className="brand-badge">
+            <span className="brand-dot" />
+            A product from <span className="brand-name">Aakara.ai</span>
+          </div>
         </div>
       </div>
     </aside>

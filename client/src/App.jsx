@@ -131,7 +131,7 @@ export default function App() {
   );
 
   return (
-    <div className="h-screen w-screen flex bg-base-950">
+    <div className="h-screen w-screen flex bg-base-950 selection:bg-accent/30 selection:text-white">
       <Sidebar
         open={sidebarOpen}
         conversations={conversations}

@@ -153,8 +153,8 @@ export default function InterviewPrep({ models, model, onModelChange }) {
     <div className="flex-1 overflow-y-auto">
       <div className="max-w-4xl mx-auto px-4 py-6 space-y-6">
         <div>
-          <h1 className="font-display font-bold text-xl text-ink-100">
-            Resume-based Interview Prep
+          <h1 className="font-display font-bold text-xl">
+            <span className="text-gradient-brand">Resume-based Interview Prep</span>
           </h1>
           <p className="text-sm text-ink-500 mt-1">
             Upload your resume — an AI interviewer agent reads it and builds a
@@ -164,7 +164,7 @@ export default function InterviewPrep({ models, model, onModelChange }) {
         </div>
 
         {/* Upload + config panel */}
-        <div className="rounded-2xl border border-base-600 bg-base-900 p-4 space-y-4">
+        <div className="rounded-2xl border border-base-600 bg-base-900 shadow-card p-4 space-y-4">
           <div
             onDragOver={(e) => {
               e.preventDefault();
@@ -175,8 +175,8 @@ export default function InterviewPrep({ models, model, onModelChange }) {
             onClick={() => fileInputRef.current?.click()}
             className={`cursor-pointer rounded-xl border-2 border-dashed px-4 py-6 text-center transition-colors ${
               dragOver
-                ? "border-accent bg-accent/5"
-                : "border-base-600 hover:border-base-500"
+                ? "border-accent bg-brand-gradient-soft"
+                : "border-base-600 hover:border-accent-dim"
             }`}
           >
             <input
@@ -269,7 +269,7 @@ export default function InterviewPrep({ models, model, onModelChange }) {
                   onClick={() => toggleFocus(cat)}
                   className={`text-xs px-3 py-1.5 rounded-full border transition-colors ${
                     focusAreas.includes(cat)
-                      ? "bg-accent/15 border-accent text-accent-soft"
+                      ? "bg-brand-gradient-soft border-accent text-accent-soft"
                       : "border-base-600 text-ink-500 hover:text-ink-300"
                   }`}
                 >
@@ -286,7 +286,7 @@ export default function InterviewPrep({ models, model, onModelChange }) {
             <button
               onClick={handleGenerate}
               disabled={loading || uploading}
-              className="rounded-xl bg-accent hover:bg-accent-soft disabled:opacity-50 disabled:cursor-not-allowed transition-colors px-5 py-2.5 text-sm font-medium text-white"
+              className="rounded-xl bg-brand-gradient hover:opacity-90 shadow-glow-sm disabled:opacity-50 disabled:cursor-not-allowed transition-opacity px-5 py-2.5 text-sm font-semibold text-white"
             >
               {loading ? "Generating…" : "Generate interview questions"}
             </button>

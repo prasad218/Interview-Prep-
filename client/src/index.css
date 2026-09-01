@@ -23,9 +23,35 @@
     background-color: theme("colors.base.600");
     border-radius: 999px;
   }
+  *::-webkit-scrollbar-thumb:hover {
+    background-color: theme("colors.base.500");
+  }
   :focus-visible {
     outline: 2px solid theme("colors.accent.DEFAULT");
     outline-offset: 2px;
+  }
+}
+
+@layer components {
+  /* Gradient brand wordmark */
+  .text-gradient-brand {
+    @apply bg-brand-gradient bg-clip-text text-transparent;
+  }
+
+  /* Small "made by" badge used in the sidebar footer and empty state */
+  .brand-badge {
+    @apply inline-flex items-center gap-1.5 rounded-full border border-base-600 bg-base-800/70 px-2.5 py-1 text-[11px] text-ink-500;
+  }
+  .brand-badge .brand-dot {
+    @apply w-1.5 h-1.5 rounded-full bg-brand-gradient;
+  }
+  .brand-badge .brand-name {
+    @apply text-gradient-brand font-semibold;
+  }
+
+  /* Frosted glass panel */
+  .glass-panel {
+    @apply bg-base-900/70 backdrop-blur-xl border border-white/5;
   }
 }
 

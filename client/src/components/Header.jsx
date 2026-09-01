@@ -12,7 +12,7 @@ export default function Header({
   onViewChange,
 }) {
   return (
-    <header className="h-14 shrink-0 flex items-center justify-between gap-3 px-4 border-b border-base-700 bg-base-900">
+    <header className="h-14 shrink-0 flex items-center justify-between gap-3 px-4 border-b border-base-700 glass-panel">
       <div className="flex items-center gap-3 min-w-0">
         <button
           onClick={onToggleSidebar}
@@ -31,9 +31,9 @@ export default function Header({
           <div className="flex items-center bg-base-800 border border-base-600 rounded-lg p-0.5 text-xs">
             <button
               onClick={() => onViewChange("chat")}
-              className={`px-3 py-1.5 rounded-md transition-colors ${
+              className={`px-3 py-1.5 rounded-md transition-all ${
                 view === "chat"
-                  ? "bg-accent text-white"
+                  ? "bg-brand-gradient text-white shadow-glow-sm"
                   : "text-ink-300 hover:text-ink-100"
               }`}
             >
@@ -41,9 +41,9 @@ export default function Header({
             </button>
             <button
               onClick={() => onViewChange("interview")}
-              className={`px-3 py-1.5 rounded-md transition-colors ${
+              className={`px-3 py-1.5 rounded-md transition-all ${
                 view === "interview"
-                  ? "bg-accent text-white"
+                  ? "bg-brand-gradient text-white shadow-glow-sm"
                   : "text-ink-300 hover:text-ink-100"
               }`}
             >
