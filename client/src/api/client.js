@@ -74,6 +74,40 @@ export async function generateInterviewQuestions(payload) {
 }
 
 /**
+ * Starts a live, resume-based mock interview session on the server and
+ * returns the first question.
+ * payload: { resumeText, role, experience, numQuestions, focusAreas, model }
+ */
+export async function startLiveInterview(payload) {
+  const res = await fetch(`${BASE}/live-interview/start`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  return json(res);
+}
+
+/** Submits an answer to the current live-interview question; returns feedback + next question (or the final report). */
+export async function submitLiveInterviewAnswer(sessionId, answer) {
+  const res = await fetch(`${BASE}/live-interview/answer`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ sessionId, answer }),
+  });
+  return json(res);
+}
+
+/** Ends a live interview early (or re-fetches the final report) and returns the wrap-up report. */
+export async function endLiveInterview(sessionId) {
+  const res = await fetch(`${BASE}/live-interview/end`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ sessionId }),
+  });
+  return json(res);
+}
+
+/**
  * Sends a message and streams the assistant's reply.
  * Parses the server's text/event-stream response manually (fetch + reader)
  * since EventSource doesn't support POST bodies.

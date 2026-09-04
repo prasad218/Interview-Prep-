@@ -25,8 +25,8 @@ export default function InputBar({ onSend, disabled, placeholder }) {
   };
 
   return (
-    <div className="border-t border-base-700 bg-base-900 px-4 py-3">
-      <div className="max-w-3xl mx-auto flex items-end gap-2 bg-base-800 border border-base-600 focus-within:border-accent rounded-2xl px-3 py-2 transition-colors">
+    <div className="border-t border-base-700 glass-panel px-4 py-3">
+      <div className="max-w-3xl mx-auto flex items-end gap-2 bg-base-800 border border-base-600 focus-within:border-accent focus-within:shadow-glow-sm rounded-2xl px-3 py-2 transition-all">
         <textarea
           ref={ref}
           rows={1}
@@ -40,7 +40,7 @@ export default function InputBar({ onSend, disabled, placeholder }) {
         <button
           onClick={submit}
           disabled={disabled || !value.trim()}
-          className="shrink-0 w-8 h-8 rounded-full bg-accent hover:bg-accent-soft disabled:bg-base-600 disabled:cursor-not-allowed transition-colors flex items-center justify-center text-white"
+          className="shrink-0 w-8 h-8 rounded-full bg-brand-gradient hover:opacity-90 disabled:bg-base-600 disabled:bg-none disabled:opacity-60 disabled:cursor-not-allowed transition-all flex items-center justify-center text-white"
           title="Send"
         >
           ↑

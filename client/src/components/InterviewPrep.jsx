@@ -1,14 +1,7 @@
-import { useCallback, useRef, useState } from "react";
+import { useState } from "react";
 import * as api from "../api/client.js";
 import ModelSelector from "./ModelSelector.jsx";
-
-const CATEGORIES = [
-  "Resume & Projects",
-  "Technical Knowledge",
-  "DSA & Problem Solving",
-  "System Design",
-  "Behavioral (HR)",
-];
+import ResumeSetupForm, { INTERVIEW_CATEGORIES } from "./ResumeSetupForm.jsx";
 
 const DIFFICULTY_STYLE = {
   Easy: "bg-signal-teal/15 text-signal-teal border-signal-teal/30",
@@ -68,52 +61,18 @@ function QuestionCard({ q, index }) {
   );
 }
 
-export default function InterviewPrep({ models, model, onModelChange }) {
-  const fileInputRef = useRef(null);
+export default function InterviewPrep({ models, model, onModelChange, onGoLive }) {
   const [resumeText, setResumeText] = useState("");
   const [fileName, setFileName] = useState("");
   const [role, setRole] = useState("");
   const [experience, setExperience] = useState("Fresher / Entry-level");
   const [numQuestions, setNumQuestions] = useState(10);
-  const [focusAreas, setFocusAreas] = useState([...CATEGORIES]);
+  const [focusAreas, setFocusAreas] = useState([...INTERVIEW_CATEGORIES]);
   const [questions, setQuestions] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [uploading, setUploading] = useState(false);
   const [error, setError] = useState(null);
-  const [dragOver, setDragOver] = useState(false);
 
-  const toggleFocus = (cat) => {
-    setFocusAreas((prev) =>
-      prev.includes(cat) ? prev.filter((c) => c !== cat) : [...prev, cat]
-    );
-  };
-
-  const handleFile = useCallback(async (file) => {
-    if (!file) return;
-    setError(null);
-    setUploading(true);
-    try {
-      const { text, filename } = await api.extractResume(file);
-      setResumeText(text);
-      setFileName(filename || file.name);
-    } catch (e) {
-      setError(e.message);
-    } finally {
-      setUploading(false);
-    }
-  }, []);
-
-  const onDrop = useCallback(
-    (e) => {
-      e.preventDefault();
-      setDragOver(false);
-      const file = e.dataTransfer.files?.[0];
-      if (file) handleFile(file);
-    },
-    [handleFile]
-  );
-
-  const handleGenerate = useCallback(async () => {
+  const handleGenerate = async () => {
     if (!resumeText.trim()) {
       setError("Upload a resume or paste your resume text first.");
       return;
@@ -140,7 +99,7 @@ export default function InterviewPrep({ models, model, onModelChange }) {
     } finally {
       setLoading(false);
     }
-  }, [resumeText, role, experience, numQuestions, focusAreas, model]);
+  };
 
   const grouped = questions
     ? questions.reduce((acc, q) => {
@@ -152,132 +111,46 @@ export default function InterviewPrep({ models, model, onModelChange }) {
   return (
     <div className="flex-1 overflow-y-auto">
       <div className="max-w-4xl mx-auto px-4 py-6 space-y-6">
-        <div>
-          <h1 className="font-display font-bold text-xl text-ink-100">
-            Resume-based Interview Prep
-          </h1>
-          <p className="text-sm text-ink-500 mt-1">
-            Upload your resume — an AI interviewer agent reads it and builds a
-            technical interview question set tailored to your projects and
-            stack, with model answers.
-          </p>
+        <div className="flex items-start justify-between gap-4 flex-wrap">
+          <div>
+            <h1 className="font-display font-bold text-xl">
+              <span className="text-gradient-brand">Resume-based Interview Prep</span>
+            </h1>
+            <p className="text-sm text-ink-500 mt-1">
+              Upload your resume — an AI interviewer agent reads it and builds a
+              technical interview question set tailored to your projects and
+              stack, with model answers.
+            </p>
+          </div>
+          {onGoLive && (
+            <button
+              onClick={onGoLive}
+              className="shrink-0 flex items-center gap-2 rounded-xl border border-accent/40 bg-brand-gradient-soft hover:bg-brand-gradient hover:text-white transition-colors px-4 py-2.5 text-sm font-semibold text-accent-soft"
+            >
+              <span className="w-1.5 h-1.5 rounded-full bg-signal-rose animate-pulseDot" />
+              Try Live Interview
+            </button>
+          )}
         </div>
 
         {/* Upload + config panel */}
-        <div className="rounded-2xl border border-base-600 bg-base-900 p-4 space-y-4">
-          <div
-            onDragOver={(e) => {
-              e.preventDefault();
-              setDragOver(true);
-            }}
-            onDragLeave={() => setDragOver(false)}
-            onDrop={onDrop}
-            onClick={() => fileInputRef.current?.click()}
-            className={`cursor-pointer rounded-xl border-2 border-dashed px-4 py-6 text-center transition-colors ${
-              dragOver
-                ? "border-accent bg-accent/5"
-                : "border-base-600 hover:border-base-500"
-            }`}
-          >
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept=".pdf,.docx,.txt"
-              className="hidden"
-              onChange={(e) => handleFile(e.target.files?.[0])}
-            />
-            {uploading ? (
-              <p className="text-sm text-ink-300">Reading resume…</p>
-            ) : fileName ? (
-              <p className="text-sm text-ink-100">
-                ✓ {fileName}{" "}
-                <span className="text-ink-500">— click to replace</span>
-              </p>
-            ) : (
-              <p className="text-sm text-ink-300">
-                Drop your resume here (PDF / DOCX / TXT), or click to browse
-              </p>
-            )}
-          </div>
-
-          <div>
-            <label className="text-xs text-ink-500 block mb-1">
-              …or paste your resume text
-            </label>
-            <textarea
-              value={resumeText}
-              onChange={(e) => {
-                setResumeText(e.target.value);
-                setFileName("");
-              }}
-              rows={5}
-              placeholder="Paste resume content here"
-              className="w-full bg-base-800 border border-base-600 rounded-lg px-3 py-2 text-sm text-ink-100 placeholder:text-ink-500 outline-none focus:border-accent resize-none"
-            />
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div>
-              <label className="text-xs text-ink-500 block mb-1">
-                Target role (optional)
-              </label>
-              <input
-                value={role}
-                onChange={(e) => setRole(e.target.value)}
-                placeholder="e.g. Full Stack Developer"
-                className="w-full bg-base-800 border border-base-600 rounded-lg px-3 py-2 text-sm text-ink-100 placeholder:text-ink-500 outline-none focus:border-accent"
-              />
-            </div>
-            <div>
-              <label className="text-xs text-ink-500 block mb-1">
-                Experience level
-              </label>
-              <select
-                value={experience}
-                onChange={(e) => setExperience(e.target.value)}
-                className="w-full bg-base-800 border border-base-600 rounded-lg px-3 py-2 text-sm text-ink-100 outline-none focus:border-accent"
-              >
-                <option>Fresher / Entry-level</option>
-                <option>1–3 years</option>
-                <option>3–5 years</option>
-                <option>5+ years</option>
-              </select>
-            </div>
-            <div>
-              <label className="text-xs text-ink-500 block mb-1">
-                Number of questions: {numQuestions}
-              </label>
-              <input
-                type="range"
-                min={5}
-                max={20}
-                value={numQuestions}
-                onChange={(e) => setNumQuestions(Number(e.target.value))}
-                className="w-full accent-accent"
-              />
-            </div>
-          </div>
-
-          <div>
-            <label className="text-xs text-ink-500 block mb-2">
-              Focus areas
-            </label>
-            <div className="flex flex-wrap gap-2">
-              {CATEGORIES.map((cat) => (
-                <button
-                  key={cat}
-                  onClick={() => toggleFocus(cat)}
-                  className={`text-xs px-3 py-1.5 rounded-full border transition-colors ${
-                    focusAreas.includes(cat)
-                      ? "bg-accent/15 border-accent text-accent-soft"
-                      : "border-base-600 text-ink-500 hover:text-ink-300"
-                  }`}
-                >
-                  {cat}
-                </button>
-              ))}
-            </div>
-          </div>
+        <div className="rounded-2xl border border-base-600 bg-base-900 shadow-card p-4 space-y-4">
+          <ResumeSetupForm
+            resumeText={resumeText}
+            setResumeText={setResumeText}
+            fileName={fileName}
+            setFileName={setFileName}
+            role={role}
+            setRole={setRole}
+            experience={experience}
+            setExperience={setExperience}
+            numQuestions={numQuestions}
+            setNumQuestions={setNumQuestions}
+            focusAreas={focusAreas}
+            setFocusAreas={setFocusAreas}
+            error={error}
+            setError={setError}
+          />
 
           <div className="flex items-center justify-between pt-1">
             {models && (
@@ -285,8 +158,8 @@ export default function InterviewPrep({ models, model, onModelChange }) {
             )}
             <button
               onClick={handleGenerate}
-              disabled={loading || uploading}
-              className="rounded-xl bg-accent hover:bg-accent-soft disabled:opacity-50 disabled:cursor-not-allowed transition-colors px-5 py-2.5 text-sm font-medium text-white"
+              disabled={loading}
+              className="rounded-xl bg-brand-gradient hover:opacity-90 shadow-glow-sm disabled:opacity-50 disabled:cursor-not-allowed transition-opacity px-5 py-2.5 text-sm font-semibold text-white"
             >
               {loading ? "Generating…" : "Generate interview questions"}
             </button>

@@ -16,6 +16,7 @@ export default function Sidebar({
   onDelete,
   onRename,
   open,
+  onClose,
 }) {
   const [editingId, setEditingId] = useState(null);
   const [draftTitle, setDraftTitle] = useState("");
@@ -33,93 +34,131 @@ export default function Sidebar({
   };
 
   return (
-    <aside
-      className={`${
-        open ? "w-72" : "w-0"
-      } shrink-0 overflow-hidden transition-[width] duration-200 bg-base-900 border-r border-base-700 flex flex-col`}
-    >
-      <div className="w-72 flex flex-col h-full">
-        <div className="p-3">
-          <button
-            onClick={onNewChat}
-            className="w-full flex items-center gap-2 rounded-xl border border-base-600 bg-base-800 hover:bg-base-700 transition-colors px-3 py-2.5 text-sm font-medium text-ink-100"
-          >
-            <span className="text-accent-soft text-base leading-none">＋</span>
-            New chat
-          </button>
-        </div>
+    <>
+      {/* Backdrop: mobile-only, shown while the drawer is open */}
+      {open && (
+        <div
+          onClick={onClose}
+          className="fixed inset-0 bg-black/60 z-30 md:hidden"
+          aria-hidden="true"
+        />
+      )}
 
-        <nav className="flex-1 overflow-y-auto px-2 pb-2 space-y-0.5">
-          {conversations.length === 0 && (
-            <p className="text-ink-500 text-xs px-3 py-6 text-center">
-              No conversations yet. Start one above.
-            </p>
-          )}
-
-          {conversations.map((c) => (
-            <div
-              key={c.id}
-              className={`group relative rounded-lg px-3 py-2 cursor-pointer text-sm transition-colors ${
-                c.id === activeId
-                  ? "bg-base-700 text-ink-100"
-                  : "text-ink-300 hover:bg-base-800"
-              }`}
-              onClick={() => onSelect(c.id)}
-            >
-              {editingId === c.id ? (
-                <input
-                  autoFocus
-                  value={draftTitle}
-                  onChange={(e) => setDraftTitle(e.target.value)}
-                  onBlur={commitEdit}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") commitEdit();
-                    if (e.key === "Escape") setEditingId(null);
-                  }}
-                  onClick={(e) => e.stopPropagation()}
-                  className="w-full bg-base-950 border border-accent rounded px-1.5 py-0.5 text-sm outline-none"
-                />
-              ) : (
-                <div className="flex items-center justify-between gap-2">
-                  <span className="truncate">{c.title || "New chat"}</span>
-                  <span className="hidden group-hover:flex items-center gap-1 shrink-0">
-                    <button
-                      title="Rename"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        startEdit(c);
-                      }}
-                      className="text-ink-500 hover:text-ink-100 px-1"
-                    >
-                      ✎
-                    </button>
-                    <button
-                      title="Delete"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onDelete(c.id);
-                      }}
-                      className="text-ink-500 hover:text-signal-rose px-1"
-                    >
-                      ✕
-                    </button>
-                  </span>
-                </div>
-              )}
-              <span className="block text-[11px] text-ink-500 mt-0.5">
-                {formatDate(c.updatedAt)}
-              </span>
+      <aside
+        className={`fixed md:static inset-y-0 left-0 z-40 md:z-auto w-72 shrink-0 overflow-hidden
+        bg-base-900 border-r border-base-700 flex flex-col
+        transition-transform duration-200 md:transition-[width] md:duration-200
+        ${open ? "translate-x-0" : "-translate-x-full"} md:translate-x-0
+        ${open ? "md:w-72" : "md:w-0"}`}
+      >
+        <div className="w-72 flex flex-col h-full">
+          <div className="flex items-center gap-2.5 px-4 pt-4 pb-1">
+            <div className="w-8 h-8 rounded-xl bg-brand-gradient shadow-glow-sm flex items-center justify-center shrink-0">
+              <span className="text-white text-sm font-bold">✦</span>
             </div>
-          ))}
-        </nav>
+            <div className="min-w-0 flex-1">
+              <p className="font-display font-bold text-sm text-ink-100 leading-tight truncate">
+                Chat Startup
+              </p>
+              <p className="text-[10px] text-ink-500 leading-tight truncate">
+                by <span className="text-gradient-brand font-semibold">Aakara.ai</span>
+              </p>
+            </div>
+            <button
+              onClick={onClose}
+              className="md:hidden shrink-0 w-7 h-7 flex items-center justify-center rounded-lg text-ink-500 hover:text-ink-100 hover:bg-base-800"
+              title="Close sidebar"
+            >
+              ✕
+            </button>
+          </div>
 
-        <div className="p-3 border-t border-base-700">
-          <p className="text-[11px] text-ink-500 leading-relaxed">
-            Powered by <span className="text-ink-300">OpenRouter</span> — swap
-            models per chat, one API key for all of them.
-          </p>
+          <div className="p-3">
+            <button
+              onClick={onNewChat}
+              className="w-full flex items-center justify-center gap-2 rounded-xl bg-brand-gradient hover:opacity-90 transition-opacity shadow-glow-sm px-3 py-2.5 text-sm font-semibold text-white"
+            >
+              <span className="text-base leading-none">＋</span>
+              New chat
+            </button>
+          </div>
+
+          <nav className="flex-1 overflow-y-auto px-2 pb-2 space-y-0.5">
+            {conversations.length === 0 && (
+              <p className="text-ink-500 text-xs px-3 py-6 text-center">
+                No conversations yet. Start one above.
+              </p>
+            )}
+
+            {conversations.map((c) => (
+              <div
+                key={c.id}
+                className={`group relative rounded-lg px-3 py-2 cursor-pointer text-sm transition-colors ${
+                  c.id === activeId
+                    ? "bg-base-700 text-ink-100 ring-1 ring-accent/40"
+                    : "text-ink-300 hover:bg-base-800"
+                }`}
+                onClick={() => onSelect(c.id)}
+              >
+                {editingId === c.id ? (
+                  <input
+                    autoFocus
+                    value={draftTitle}
+                    onChange={(e) => setDraftTitle(e.target.value)}
+                    onBlur={commitEdit}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") commitEdit();
+                      if (e.key === "Escape") setEditingId(null);
+                    }}
+                    onClick={(e) => e.stopPropagation()}
+                    className="w-full bg-base-950 border border-accent rounded px-1.5 py-0.5 text-sm outline-none"
+                  />
+                ) : (
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="truncate">{c.title || "New chat"}</span>
+                    <span className="flex md:hidden md:group-hover:flex items-center gap-1 shrink-0">
+                      <button
+                        title="Rename"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          startEdit(c);
+                        }}
+                        className="text-ink-500 hover:text-ink-100 px-1"
+                      >
+                        ✎
+                      </button>
+                      <button
+                        title="Delete"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onDelete(c.id);
+                        }}
+                        className="text-ink-500 hover:text-signal-rose px-1"
+                      >
+                        ✕
+                      </button>
+                    </span>
+                  </div>
+                )}
+                <span className="block text-[11px] text-ink-500 mt-0.5">
+                  {formatDate(c.updatedAt)}
+                </span>
+              </div>
+            ))}
+          </nav>
+
+          <div className="p-3 border-t border-base-700 space-y-2.5">
+            <p className="text-[11px] text-ink-500 leading-relaxed">
+              Powered by <span className="text-ink-300">OpenRouter</span> — swap
+              models per chat, one API key for all of them.
+            </p>
+            <div className="brand-badge">
+              <span className="brand-dot" />
+              A product from <span className="brand-name">Aakara.ai</span>
+            </div>
+          </div>
         </div>
-      </div>
-    </aside>
+      </aside>
+    </>
   );
 }

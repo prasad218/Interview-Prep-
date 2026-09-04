@@ -5,11 +5,14 @@ import ChatArea from "./components/ChatArea.jsx";
 import InputBar from "./components/InputBar.jsx";
 import EmptyState from "./components/EmptyState.jsx";
 import InterviewPrep from "./components/InterviewPrep.jsx";
+import LiveInterview from "./components/LiveInterview.jsx";
 import * as api from "./api/client.js";
 
 export default function App() {
-  const [view, setView] = useState("chat"); // "chat" | "interview"
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [view, setView] = useState("chat"); // "chat" | "interview" | "live"
+  const [sidebarOpen, setSidebarOpen] = useState(
+    () => typeof window === "undefined" || window.innerWidth >= 768
+  );
   const [conversations, setConversations] = useState([]);
   const [activeId, setActiveId] = useState(null);
   const [messages, setMessages] = useState([]);
@@ -27,6 +30,12 @@ export default function App() {
     api.fetchConversations().then(setConversations).catch((e) => setError(e.message));
   }, []);
 
+  const closeSidebarOnMobile = useCallback(() => {
+    if (typeof window !== "undefined" && window.innerWidth < 768) {
+      setSidebarOpen(false);
+    }
+  }, []);
+
   const loadConversation = useCallback(async (id) => {
     setError(null);
     try {
@@ -34,10 +43,11 @@ export default function App() {
       setActiveId(id);
       setMessages(convo.messages);
       setModel(convo.model);
+      closeSidebarOnMobile();
     } catch (e) {
       setError(e.message);
     }
-  }, []);
+  }, [closeSidebarOnMobile]);
 
   const refreshList = useCallback(async () => {
     const list = await api.fetchConversations();
@@ -52,10 +62,11 @@ export default function App() {
       await refreshList();
       setActiveId(convo.id);
       setMessages([]);
+      closeSidebarOnMobile();
     } catch (e) {
       setError(e.message);
     }
-  }, [model, refreshList]);
+  }, [model, refreshList, closeSidebarOnMobile]);
 
   const handleDelete = useCallback(
     async (id) => {
@@ -131,7 +142,7 @@ export default function App() {
   );
 
   return (
-    <div className="h-screen w-screen flex bg-base-950">
+    <div className="h-screen w-screen flex bg-base-950 selection:bg-accent/30 selection:text-white">
       <Sidebar
         open={sidebarOpen}
         conversations={conversations}
@@ -140,6 +151,7 @@ export default function App() {
         onNewChat={handleNewChat}
         onDelete={handleDelete}
         onRename={handleRename}
+        onClose={() => setSidebarOpen(false)}
       />
 
       <div className="flex-1 flex flex-col min-w-0">
@@ -147,6 +159,8 @@ export default function App() {
           title={
             view === "interview"
               ? "Interview Prep"
+              : view === "live"
+              ? "Live Interview"
               : activeConversation?.title || "Chat Startup"
           }
           sidebarOpen={sidebarOpen}
@@ -166,7 +180,14 @@ export default function App() {
         )}
 
         {view === "interview" ? (
-          <InterviewPrep models={models} model={model} onModelChange={setModel} />
+          <InterviewPrep
+            models={models}
+            model={model}
+            onModelChange={setModel}
+            onGoLive={() => setView("live")}
+          />
+        ) : view === "live" ? (
+          <LiveInterview models={models} model={model} onModelChange={setModel} />
         ) : activeId ? (
           <>
             <ChatArea

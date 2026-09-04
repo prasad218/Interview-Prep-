@@ -7,8 +7,8 @@ export default function MessageBubble({ role, content, model, streaming }) {
 
   if (isUser) {
     return (
-      <div className="flex justify-end animate-fadeIn">
-        <div className="max-w-[75%] bg-accent text-white rounded-2xl rounded-br-sm px-4 py-2.5 text-[15px] leading-relaxed whitespace-pre-wrap">
+      <div className="flex justify-end items-end gap-2 animate-fadeIn">
+        <div className="max-w-[75%] bg-brand-gradient text-white rounded-2xl rounded-br-sm px-4 py-2.5 text-[15px] leading-relaxed whitespace-pre-wrap shadow-glow-sm">
           {content}
         </div>
       </div>
@@ -16,8 +16,11 @@ export default function MessageBubble({ role, content, model, streaming }) {
   }
 
   return (
-    <div className="flex justify-start animate-fadeIn">
-      <div className="max-w-[80%]">
+    <div className="flex justify-start items-start gap-2.5 animate-fadeIn">
+      <div className="w-7 h-7 rounded-lg bg-brand-gradient-soft border border-accent-dim/40 flex items-center justify-center shrink-0 mt-1">
+        <span className="text-accent-soft text-xs">✦</span>
+      </div>
+      <div className="max-w-[80%] min-w-0">
         {model && (
           <div className="flex items-center gap-1.5 mb-1 px-1">
             <span
@@ -29,7 +32,7 @@ export default function MessageBubble({ role, content, model, streaming }) {
             </span>
           </div>
         )}
-        <div className="bg-base-800 border border-base-700 rounded-2xl rounded-bl-sm px-4 py-3 text-[15px] text-ink-100">
+        <div className="bg-base-800/80 border border-base-700 rounded-2xl rounded-tl-sm px-4 py-3 text-[15px] text-ink-100 shadow-card">
           <div className="prose-chat">
             <ReactMarkdown remarkPlugins={[remarkGfm]}>
               {content || " "}
