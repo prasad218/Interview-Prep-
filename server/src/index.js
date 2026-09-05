@@ -6,6 +6,9 @@ import chatRouter from "./routes/chat.js";
 import modelsRouter from "./routes/models.js";
 import interviewRouter from "./routes/interview.js";
 import liveInterviewRouter from "./routes/liveInterview.js";
+import authRouter from "./routes/auth.js";
+import roadmapRouter from "./routes/roadmap.js";
+import testRouter from "./routes/test.js";
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -22,6 +25,9 @@ app.use("/api/chat", chatRouter);
 app.use("/api/models", modelsRouter);
 app.use("/api/interview", interviewRouter);
 app.use("/api/live-interview", liveInterviewRouter);
+app.use("/api/auth", authRouter);
+app.use("/api/roadmap", roadmapRouter);
+app.use("/api/test", testRouter);
 
 app.listen(PORT, () => {
   if (!process.env.OPENROUTER_API_KEY) {

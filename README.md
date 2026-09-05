@@ -1,15 +1,14 @@
-# Chat Startup — ChatGPT-style chat app powered by OpenRouter
+# Interview Prep — From Preparation to Get Hired
 
-A minimal, working starting point: React chat UI on the frontend, a small
-Node/Express backend that streams responses from **OpenRouter** (so you can
-call GPT-4o, Claude, Gemini, Llama, and dozens of other models through one
-API key). Conversations persist to a local JSON file so nothing is lost on
-refresh.
+A product from **Aakara.AI**. Upload a resume once, get a personalized
+day-by-day prep roadmap, practice with a live AI mock interviewer, take
+role- or company-specific readiness tests, and download a certificate when
+you pass.
 
 ```
-chat-startup/
-├── server/     Express API — talks to OpenRouter, stores conversations
-└── client/     React (Vite) chat UI
+interview-prep/
+├── server/     Express API — auth, roadmap/test generation via OpenRouter, storage
+└── client/     React (Vite) UI
 ```
 
 ## 1. Get an OpenRouter API key
@@ -25,15 +24,32 @@ cd server
 cp .env.example .env
 ```
 
-Open `server/.env` and paste in your key:
+Open `server/.env` and fill in:
 
 ```
 OPENROUTER_API_KEY=sk-or-v1-...
+JWT_SECRET=<a long random string, e.g. `openssl rand -hex 32`>
 ```
+
+`JWT_SECRET` is required — it signs login sessions. Changing it later logs
+everyone out.
+
+`GOOGLE_CLIENT_ID` is optional and only needed for the "Sign in with Google"
+button — see **Google sign-in setup** below.
 
 You can also set `DEFAULT_MODEL` (any OpenRouter model id, e.g.
 `anthropic/claude-3.5-sonnet`) — see the full model list at
 https://openrouter.ai/models.
+
+### Client env (optional)
+
+```bash
+cd client
+cp .env.example .env
+```
+
+Leave `VITE_API_URL` empty for local dev (Vite proxies `/api` to the server
+automatically). In production, set it to your deployed server's URL.
 
 ## 3. Install dependencies
 
@@ -43,90 +59,111 @@ From the project root:
 npm run install:all
 ```
 
-(This runs `npm install` at the root — for `concurrently`, used by `npm run dev` — plus inside `server/` and `client/`.)
-
 ## 4. Run it
-
-From the project root:
 
 ```bash
 npm run dev
 ```
 
-This starts the API on **http://localhost:3001** and the UI on
-**http://localhost:5173** at the same time. Open the UI URL in your browser.
+Starts the API on **http://localhost:3001** and the UI on
+**http://localhost:5173**. Open the UI URL in your browser.
 
-If you'd rather run them in two separate terminals:
+## Google sign-in setup (optional)
 
-```bash
-# terminal 1
-cd server && npm run dev
+1. Go to https://console.cloud.google.com/apis/credentials and create an
+   **OAuth 2.0 Client ID** (type: Web application).
+2. Under "Authorized JavaScript origins", add your dev URL
+   (`http://localhost:5173`) and your production URL once deployed.
+3. Copy the client ID into **both**:
+   - `server/.env` → `GOOGLE_CLIENT_ID`
+   - `client/.env` → `VITE_GOOGLE_CLIENT_ID`
+4. Restart both dev servers.
 
-# terminal 2
-cd client && npm run dev
-```
+Without this, email/password sign-in still works fully — the Google button
+just shows a small "not configured" note instead.
 
-## How it works
+## How the product works
 
-- The browser never sees your OpenRouter key — it only talks to your own
-  `server/`, which attaches the key server-side when calling OpenRouter.
-- `POST /api/chat` streams the model's reply token-by-token back to the
-  browser using Server-Sent Events, so responses appear incrementally like
-  ChatGPT.
-- Each conversation stores its own `model`, and you can switch models from
-  the header dropdown at any time — including mid-project, per message.
-- Conversations are stored in `server/data/db.json`. It's a flat JSON file,
-  not a real database — good enough to develop with, but swap it out before
-  you have real users (see "Next steps" below).
+1. **Sign up / sign in** — email+password or Google. Sessions are JWTs
+   stored in the browser; the server never sees your OpenRouter key exposed
+   to the client.
+2. **Onboarding** — upload or paste a resume, set your target role, days
+   until your placement deadline, daily study hours, and (optionally) target
+   companies.
+3. **Roadmap** — the server sends your profile to an LLM which returns a
+   personalized, phase-by-phase schedule sized to your timeline, plus a
+   company-specific interview-round breakdown for each company you named
+   (based on commonly reported public patterns — explicitly framed as a
+   general guide, not insider information).
+4. **Live Interview / Question Bank** — practice with a conversational AI
+   mock interviewer, or generate a static Q&A set with model answers.
+5. **Test Center** — take an 8-question multiple-choice readiness test,
+   either general-role or styled after a target company's process. Passing
+   (≥70%) unlocks a certificate.
+6. **Certificate** — a downloadable PDF certificate + badge. It's clearly
+   issued by **Interview Prep (Aakara.AI)** based on practice-test
+   performance — not an official credential from the target company, and the
+   certificate itself says so.
 
-## Resume-based Interview Prep
+## Important operational note: user data storage
 
-Click **"Interview Prep"** in the header to switch views. This feature acts
-as an AI interviewer agent:
+Accounts, profiles, roadmaps, and test results are stored in a flat
+`server/data/db.json` file — the same approach the original chat storage
+used. This is fine for local development and small deployments, but:
 
-1. Upload a resume (PDF / DOCX / TXT) — or paste the text directly — and the
-   server extracts the raw text.
-2. Pick a target role, experience level, number of questions, and which
-   sections to cover (Resume & Projects, Technical Knowledge, DSA & Problem
-   Solving, System Design, Behavioral).
-3. The server sends your resume text to OpenRouter with a prompt instructing
-   the model to act as a technical interviewer, referencing your actual
-   projects/stack by name, and to return a structured JSON set of questions —
-   each with a difficulty tag, a model answer, and a likely follow-up
-   question.
-4. Questions are grouped by category in the UI; click a question to reveal
-   its model answer.
-
-Nothing here is stored server-side beyond the request/response — resume text
-lives only in the browser tab's state, so refreshing clears it (by design,
-so you're not leaving resumes sitting in a JSON file).
+- **It is not safe for production with real users as-is.** If you deploy to
+  a host with an ephemeral filesystem (e.g. Render's free tier without a
+  persistent disk), all accounts and data are wiped on every redeploy or
+  restart.
+- Before relying on this for real users, either attach a persistent disk
+  (Render, Fly.io volumes, etc.) or migrate `server/src/db.js` to a real
+  database (Postgres, etc.) — the function signatures there are already
+  isolated to make that swap straightforward.
 
 ## API reference
 
-| Method | Route                       | Description                          |
-|--------|------------------------------|---------------------------------------|
-| GET    | `/api/conversations`         | List conversations (no messages)      |
-| GET    | `/api/conversations/:id`     | Get one conversation with messages    |
-| POST   | `/api/conversations`         | Create a conversation `{ model }`     |
-| PATCH  | `/api/conversations/:id`     | Rename `{ title }`                    |
-| DELETE | `/api/conversations/:id`     | Delete a conversation                 |
-| POST   | `/api/chat`                  | Send a message, stream the reply (SSE)|
-| GET    | `/api/models`                | List models available via OpenRouter  |
-| POST   | `/api/interview/extract`     | Extract text from an uploaded resume file (multipart, field `resume`) |
-| POST   | `/api/interview/generate`    | Generate a Q&A set from resume text `{ resumeText, role, experience, numQuestions, focusAreas, model }` |
+| Method | Route                        | Auth | Description |
+|--------|------------------------------|------|--------------|
+| POST   | `/api/auth/signup`           | —    | `{ name, email, password }` |
+| POST   | `/api/auth/login`            | —    | `{ email, password }` |
+| POST   | `/api/auth/google`           | —    | `{ credential }` — Google ID token |
+| GET    | `/api/auth/me`                | ✓    | Current user |
+| PATCH  | `/api/auth/profile`          | ✓    | `{ resumeText, targetRole, daysToPlacement, dailyHours, targetCompanies }` |
+| POST   | `/api/roadmap/generate`      | ✓    | Generate/regenerate the roadmap from the saved profile |
+| GET    | `/api/roadmap`                | ✓    | Get the saved roadmap |
+| PATCH  | `/api/roadmap/progress`      | ✓    | `{ rangeLabel, completed }` — toggle a schedule block |
+| POST   | `/api/test/start`            | ✓    | `{ mode: "role"|"company", company? }` — generates questions |
+| POST   | `/api/test/submit`           | ✓    | `{ testId, answers }` — grades, returns certificate if passed |
+| GET    | `/api/test/results`          | ✓    | Past test result summaries |
+| GET    | `/api/conversations`         | —    | List chat conversations |
+| GET    | `/api/conversations/:id`     | —    | Get one conversation with messages |
+| POST   | `/api/conversations`         | —    | Create a conversation `{ model }` |
+| PATCH  | `/api/conversations/:id`     | —    | Rename `{ title }` |
+| DELETE | `/api/conversations/:id`     | —    | Delete a conversation |
+| POST   | `/api/chat`                  | —    | Send a message, stream the reply (SSE) |
+| GET    | `/api/models`                | —    | List models available via OpenRouter |
+| POST   | `/api/interview/extract`     | —    | Extract text from an uploaded resume file (multipart, field `resume`) |
+| POST   | `/api/interview/generate`    | —    | Generate a static Q&A set `{ resumeText, role, experience, numQuestions, focusAreas, model }` |
+| POST   | `/api/live-interview/start`  | —    | Start a live mock interview session |
+| POST   | `/api/live-interview/answer` | —    | Submit an answer, get feedback + next question |
+| POST   | `/api/live-interview/end`    | —    | End early, get a wrap-up report |
+
+Routes marked **Auth** require an `Authorization: Bearer <token>` header.
+Note: the chat / interview-prep / live-interview features are not yet scoped
+per-user (they were built before accounts existed) — they work for anyone
+using the app, logged in or not, and aren't tied to a specific account. The
+new Roadmap/Test Center features are fully account-scoped.
 
 ## Next steps for a real product
 
-- **Auth** — add user accounts (e.g. sessions + a users table) so
-  conversations belong to a specific person, not to whoever opens the app.
-- **Real database** — swap `server/src/db.js` for Postgres/SQLite once you
-  have concurrent users; the function signatures are already isolated there
-  to make that swap easy.
+- **Scope existing chat/interview features to accounts** — currently only
+  Roadmap/Test Center are tied to the logged-in user.
+- **Real database** — see the storage note above; this matters more here
+  than in a typical demo since real user accounts are involved.
 - **Rate limiting / cost controls** — OpenRouter bills per token; add
   per-user limits before opening this up publicly.
-- **Retry/stop generation** — the UI has room for a "stop generating" button
-  next to the input; wire it to `AbortController` on the fetch in
-  `client/src/api/client.js`.
+- **Email verification / password reset** — not implemented; signup accepts
+  any email without confirming ownership.
 - **Deploy** — the client builds to static files (`npm run build` in
   `client/`) you can host anywhere (Vercel, Netlify, S3+CDN); the server is a
   plain Node process you can run on Render, Fly.io, Railway, a VPS, etc.

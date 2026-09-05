@@ -23,7 +23,7 @@ export default function EmptyState({ onNewChat }) {
 
         <div className="brand-badge mt-8">
           <span className="brand-dot" />
-          A product from <span className="brand-name">Aakara.ai</span>
+          A product from <span className="brand-name">Aakara.AI</span>
         </div>
       </div>
     </div>

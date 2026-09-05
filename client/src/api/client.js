@@ -1,3 +1,5 @@
+import { getToken } from "./authToken.js";
+
 const BASE = `${import.meta.env.VITE_API_URL || ""}/api`;
 
 async function json(res) {
@@ -6,6 +8,112 @@ async function json(res) {
     throw new Error(body.error || `Request failed (${res.status})`);
   }
   return res.json();
+}
+
+/** Headers for an authenticated request; throws nothing if logged out — the
+ * server will just reply 401 and the caller/AuthContext handles that. */
+function authHeaders(extra = {}) {
+  const token = getToken();
+  return {
+    ...extra,
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+  };
+}
+
+// ------------------------------------------------------------------ Auth
+
+export async function signup({ name, email, password }) {
+  const res = await fetch(`${BASE}/auth/signup`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ name, email, password }),
+  });
+  return json(res);
+}
+
+export async function login({ email, password }) {
+  const res = await fetch(`${BASE}/auth/login`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email, password }),
+  });
+  return json(res);
+}
+
+/** credential is the Google ID token from the "Sign in with Google" button. */
+export async function loginWithGoogle(credential) {
+  const res = await fetch(`${BASE}/auth/google`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ credential }),
+  });
+  return json(res);
+}
+
+export async function fetchMe() {
+  const res = await fetch(`${BASE}/auth/me`, { headers: authHeaders() });
+  return json(res);
+}
+
+/** payload: { resumeText, targetRole, daysToPlacement, dailyHours, targetCompanies } */
+export async function saveProfile(payload) {
+  const res = await fetch(`${BASE}/auth/profile`, {
+    method: "PATCH",
+    headers: authHeaders({ "Content-Type": "application/json" }),
+    body: JSON.stringify(payload),
+  });
+  return json(res);
+}
+
+// --------------------------------------------------------------- Roadmap
+
+export async function generateRoadmap() {
+  const res = await fetch(`${BASE}/roadmap/generate`, {
+    method: "POST",
+    headers: authHeaders(),
+  });
+  return json(res);
+}
+
+export async function fetchRoadmap() {
+  const res = await fetch(`${BASE}/roadmap`, { headers: authHeaders() });
+  return json(res);
+}
+
+export async function setRoadmapProgress(rangeLabel, completed) {
+  const res = await fetch(`${BASE}/roadmap/progress`, {
+    method: "PATCH",
+    headers: authHeaders({ "Content-Type": "application/json" }),
+    body: JSON.stringify({ rangeLabel, completed }),
+  });
+  return json(res);
+}
+
+// ------------------------------------------------------------------ Test
+
+/** mode: "role" | "company"; company required when mode === "company" */
+export async function startTest({ mode, company }) {
+  const res = await fetch(`${BASE}/test/start`, {
+    method: "POST",
+    headers: authHeaders({ "Content-Type": "application/json" }),
+    body: JSON.stringify({ mode, company }),
+  });
+  return json(res);
+}
+
+/** answers: { [questionId]: optionId } */
+export async function submitTest(testId, answers) {
+  const res = await fetch(`${BASE}/test/submit`, {
+    method: "POST",
+    headers: authHeaders({ "Content-Type": "application/json" }),
+    body: JSON.stringify({ testId, answers }),
+  });
+  return json(res);
+}
+
+export async function fetchTestResults() {
+  const res = await fetch(`${BASE}/test/results`, { headers: authHeaders() });
+  return json(res);
 }
 
 export async function fetchModels() {

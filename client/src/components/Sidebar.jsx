@@ -17,6 +17,8 @@ export default function Sidebar({
   onRename,
   open,
   onClose,
+  user,
+  onLogout,
 }) {
   const [editingId, setEditingId] = useState(null);
   const [draftTitle, setDraftTitle] = useState("");
@@ -58,10 +60,10 @@ export default function Sidebar({
             </div>
             <div className="min-w-0 flex-1">
               <p className="font-display font-bold text-sm text-ink-100 leading-tight truncate">
-                Chat Startup
+                Interview Prep
               </p>
               <p className="text-[10px] text-ink-500 leading-tight truncate">
-                by <span className="text-gradient-brand font-semibold">Aakara.ai</span>
+                by <span className="text-gradient-brand font-semibold">Aakara.AI</span>
               </p>
             </div>
             <button
@@ -148,13 +150,27 @@ export default function Sidebar({
           </nav>
 
           <div className="p-3 border-t border-base-700 space-y-2.5">
-            <p className="text-[11px] text-ink-500 leading-relaxed">
-              Powered by <span className="text-ink-300">OpenRouter</span> — swap
-              models per chat, one API key for all of them.
-            </p>
+            {user && (
+              <div className="flex items-center gap-2.5 rounded-xl bg-base-800 border border-base-700 px-3 py-2.5">
+                <div className="w-8 h-8 rounded-full bg-brand-gradient flex items-center justify-center text-white text-xs font-bold shrink-0">
+                  {(user.name || user.email || "?").slice(0, 1).toUpperCase()}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs text-ink-100 truncate">{user.name}</p>
+                  <p className="text-[10px] text-ink-500 truncate">{user.email}</p>
+                </div>
+                <button
+                  onClick={onLogout}
+                  title="Log out"
+                  className="shrink-0 text-ink-500 hover:text-signal-rose text-xs px-1.5"
+                >
+                  ⏻
+                </button>
+              </div>
+            )}
             <div className="brand-badge">
               <span className="brand-dot" />
-              A product from <span className="brand-name">Aakara.ai</span>
+              A product from <span className="brand-name">Aakara.AI</span>
             </div>
           </div>
         </div>

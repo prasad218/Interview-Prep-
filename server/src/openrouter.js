@@ -16,7 +16,7 @@ function headers() {
     "Content-Type": "application/json",
     // Optional but recommended by OpenRouter for attribution on their site.
     "HTTP-Referer": process.env.OPENROUTER_SITE_URL || "http://localhost:5173",
-    "X-Title": process.env.OPENROUTER_SITE_NAME || "Chat Startup",
+    "X-Title": process.env.OPENROUTER_SITE_NAME || "Interview Prep",
   };
 }
 

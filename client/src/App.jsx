@@ -6,10 +6,58 @@ import InputBar from "./components/InputBar.jsx";
 import EmptyState from "./components/EmptyState.jsx";
 import InterviewPrep from "./components/InterviewPrep.jsx";
 import LiveInterview from "./components/LiveInterview.jsx";
+import AuthScreen from "./components/AuthScreen.jsx";
+import OnboardingWizard from "./components/OnboardingWizard.jsx";
+import Roadmap from "./components/Roadmap.jsx";
+import TestCenter from "./components/TestCenter.jsx";
+import { useAuth } from "./context/AuthContext.jsx";
 import * as api from "./api/client.js";
 
-export default function App() {
-  const [view, setView] = useState("chat"); // "chat" | "interview" | "live"
+function SplashScreen() {
+  return (
+    <div className="h-screen w-screen flex items-center justify-center bg-base-950 bg-aurora">
+      <div className="w-12 h-12 rounded-2xl bg-brand-gradient shadow-glow flex items-center justify-center animate-floatSlow">
+        <span className="text-white text-xl font-bold">✦</span>
+      </div>
+    </div>
+  );
+}
+
+function GenerateRoadmapPrompt({ onGenerate, generating, error }) {
+  return (
+    <div className="flex-1 flex items-center justify-center p-6">
+      <div className="text-center max-w-sm">
+        <div className="w-14 h-14 rounded-2xl bg-brand-gradient shadow-glow mx-auto mb-5 flex items-center justify-center">
+          <span className="text-white text-2xl">🗺️</span>
+        </div>
+        <h2 className="font-display font-bold text-lg mb-2">
+          Your roadmap isn't generated yet
+        </h2>
+        <p className="text-sm text-ink-500 mb-5 leading-relaxed">
+          We have your prep details saved — generate your personalized
+          roadmap whenever you're ready.
+        </p>
+        {error && (
+          <div className="bg-signal-rose/10 border border-signal-rose/30 text-signal-rose text-sm rounded-xl px-4 py-3 mb-4 text-left">
+            {error}
+          </div>
+        )}
+        <button
+          onClick={onGenerate}
+          disabled={generating}
+          className="rounded-xl bg-brand-gradient hover:opacity-90 shadow-glow-sm disabled:opacity-50 transition-opacity px-5 py-2.5 text-sm font-semibold text-white"
+        >
+          {generating ? "Generating…" : "Generate my roadmap →"}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function MainApp() {
+  const { user, setUser, logout } = useAuth();
+  const [editingProfile, setEditingProfile] = useState(false);
+  const [view, setView] = useState("roadmap"); // "roadmap" | "test" | "interview" | "live" | "chat"
   const [sidebarOpen, setSidebarOpen] = useState(
     () => typeof window === "undefined" || window.innerWidth >= 768
   );
@@ -18,13 +66,15 @@ export default function App() {
   const [messages, setMessages] = useState([]);
   const [model, setModel] = useState("openai/gpt-4o-mini");
   const [models, setModels] = useState([{ id: "openai/gpt-4o-mini", name: "GPT-4o mini" }]);
-  const [streamingText, setStreamingText] = useState(null); // null = not streaming
+  const [streamingText, setStreamingText] = useState(null);
   const [streamingModel, setStreamingModel] = useState(null);
   const [error, setError] = useState(null);
+  const [generatingRoadmap, setGeneratingRoadmap] = useState(false);
+  const [roadmapError, setRoadmapError] = useState(null);
+  const [testPreselectCompany, setTestPreselectCompany] = useState(null);
 
   const activeConversation = conversations.find((c) => c.id === activeId) || null;
 
-  // Initial load: models + conversation list
   useEffect(() => {
     api.fetchModels().then(setModels).catch(() => {});
     api.fetchConversations().then(setConversations).catch((e) => setError(e.message));
@@ -36,18 +86,22 @@ export default function App() {
     }
   }, []);
 
-  const loadConversation = useCallback(async (id) => {
-    setError(null);
-    try {
-      const convo = await api.fetchConversation(id);
-      setActiveId(id);
-      setMessages(convo.messages);
-      setModel(convo.model);
-      closeSidebarOnMobile();
-    } catch (e) {
-      setError(e.message);
-    }
-  }, [closeSidebarOnMobile]);
+  const loadConversation = useCallback(
+    async (id) => {
+      setError(null);
+      try {
+        const convo = await api.fetchConversation(id);
+        setActiveId(id);
+        setMessages(convo.messages);
+        setModel(convo.model);
+        setView("chat");
+        closeSidebarOnMobile();
+      } catch (e) {
+        setError(e.message);
+      }
+    },
+    [closeSidebarOnMobile]
+  );
 
   const refreshList = useCallback(async () => {
     const list = await api.fetchConversations();
@@ -62,6 +116,7 @@ export default function App() {
       await refreshList();
       setActiveId(convo.id);
       setMessages([]);
+      setView("chat");
       closeSidebarOnMobile();
     } catch (e) {
       setError(e.message);
@@ -71,7 +126,7 @@ export default function App() {
   const handleDelete = useCallback(
     async (id) => {
       await api.deleteConversation(id).catch((e) => setError(e.message));
-      const list = await refreshList();
+      await refreshList();
       if (activeId === id) {
         setActiveId(null);
         setMessages([]);
@@ -91,10 +146,8 @@ export default function App() {
   const handleSend = useCallback(
     async (content) => {
       setError(null);
-
       let conversationId = activeId;
 
-      // Lazily create a conversation if the user typed before clicking "New chat".
       if (!conversationId) {
         try {
           const convo = await api.createConversation(model);
@@ -107,10 +160,7 @@ export default function App() {
         }
       }
 
-      setMessages((prev) => [
-        ...prev,
-        { id: `local-${Date.now()}`, role: "user", content },
-      ]);
+      setMessages((prev) => [...prev, { id: `local-${Date.now()}`, role: "user", content }]);
       setStreamingText("");
       setStreamingModel(model);
 
@@ -141,6 +191,44 @@ export default function App() {
     [activeId, model, refreshList]
   );
 
+  const handleGenerateRoadmap = useCallback(async () => {
+    setGeneratingRoadmap(true);
+    setRoadmapError(null);
+    try {
+      const { roadmap } = await api.generateRoadmap();
+      setUser((u) => ({ ...u, roadmap }));
+    } catch (e) {
+      setRoadmapError(e.message);
+    } finally {
+      setGeneratingRoadmap(false);
+    }
+  }, [setUser]);
+
+  const goTest = useCallback((company) => {
+    setTestPreselectCompany(company || null);
+    setView("test");
+  }, []);
+
+  if (editingProfile) {
+    return (
+      <OnboardingWizard
+        initialProfile={user.profile}
+        onCancel={() => setEditingProfile(false)}
+        onDone={() => {
+          setEditingProfile(false);
+          setView("roadmap");
+        }}
+      />
+    );
+  }
+
+  const titleByView = {
+    roadmap: "Your Roadmap",
+    interview: "Question Bank",
+    live: "Live Interview",
+    test: "Test Center",
+  };
+
   return (
     <div className="h-screen w-screen flex bg-base-950 selection:bg-accent/30 selection:text-white">
       <Sidebar
@@ -152,16 +240,14 @@ export default function App() {
         onDelete={handleDelete}
         onRename={handleRename}
         onClose={() => setSidebarOpen(false)}
+        user={user}
+        onLogout={logout}
       />
 
       <div className="flex-1 flex flex-col min-w-0">
         <Header
           title={
-            view === "interview"
-              ? "Interview Prep"
-              : view === "live"
-              ? "Live Interview"
-              : activeConversation?.title || "Chat Startup"
+            titleByView[view] || activeConversation?.title || "Interview Prep"
           }
           sidebarOpen={sidebarOpen}
           onToggleSidebar={() => setSidebarOpen((v) => !v)}
@@ -179,7 +265,28 @@ export default function App() {
           </div>
         )}
 
-        {view === "interview" ? (
+        {view === "roadmap" ? (
+          user.roadmap ? (
+            <Roadmap
+              roadmap={user.roadmap}
+              onRoadmapChange={(roadmap) => setUser((u) => ({ ...u, roadmap }))}
+              onGoTest={goTest}
+              onEditProfile={() => setEditingProfile(true)}
+            />
+          ) : (
+            <GenerateRoadmapPrompt
+              onGenerate={handleGenerateRoadmap}
+              generating={generatingRoadmap}
+              error={roadmapError}
+            />
+          )
+        ) : view === "test" ? (
+          <TestCenter
+            user={user}
+            preselectedCompany={testPreselectCompany}
+            onConsumePreselect={() => setTestPreselectCompany(null)}
+          />
+        ) : view === "interview" ? (
           <InterviewPrep
             models={models}
             model={model}
@@ -210,4 +317,18 @@ export default function App() {
       </div>
     </div>
   );
+}
+
+export default function App() {
+  const { user, checkingSession } = useAuth();
+
+  if (checkingSession) return <SplashScreen />;
+  if (!user) return <AuthScreen />;
+  if (!user.profile) {
+    // OnboardingWizard updates the shared auth user via context as soon as
+    // it saves the profile + roadmap, so App re-renders into MainApp
+    // automatically — no reload needed.
+    return <OnboardingWizard onDone={() => {}} />;
+  }
+  return <MainApp />;
 }
