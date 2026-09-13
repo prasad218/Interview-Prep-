@@ -154,12 +154,14 @@ export default function Sidebar({
             {user && (
               <div className="flex items-center gap-2.5 rounded-xl bg-base-800 border border-base-700 px-3 py-2.5">
                 <div className="w-8 h-8 rounded-full bg-brand-gradient flex items-center justify-center text-white text-xs font-bold shrink-0">
-                  {(user.name || user.email || "?").slice(0, 1).toUpperCase()}
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="text-xs text-ink-100 truncate">{user.name}</p>
-                  <p className="text-[10px] text-ink-500 truncate">{user.email}</p>
-                </div>
+  🔑
+</div>
+<div className="min-w-0 flex-1">
+  <p className="text-xs text-ink-100 font-mono tracking-wide truncate">
+    {user.loginCode}
+  </p>
+  <p className="text-[10px] text-ink-500 truncate">Signed in</p>
+</div>
                 <button
                   onClick={onLogout}
                   title="Log out"

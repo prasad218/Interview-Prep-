@@ -7,6 +7,8 @@ import EmptyState from "./components/EmptyState.jsx";
 import InterviewPrep from "./components/InterviewPrep.jsx";
 import LiveInterview from "./components/LiveInterview.jsx";
 import AuthScreen from "./components/AuthScreen.jsx";
+import PracticeChoice from "./components/PracticeChoice.jsx";
+import QuickPractice from "./components/QuickPractice.jsx";
 import OnboardingWizard from "./components/OnboardingWizard.jsx";
 import Roadmap from "./components/Roadmap.jsx";
 import TestCenter from "./components/TestCenter.jsx";
@@ -354,14 +356,29 @@ function MainApp() {
 
 export default function App() {
   const { user, checkingSession } = useAuth();
+  const [entryChoice, setEntryChoice] = useState(null); // null | "quick" | "roadmap"
 
   if (checkingSession) return <SplashScreen />;
   if (!user) return <AuthScreen />;
+
   if (!user.profile) {
-    // OnboardingWizard updates the shared auth user via context as soon as
-    // it saves the profile + roadmap, so App re-renders into MainApp
-    // automatically — no reload needed.
-    return <OnboardingWizard onDone={() => {}} />;
+    if (entryChoice === "quick") {
+      return <QuickPractice onBuildRoadmap={() => setEntryChoice("roadmap")} />;
+    }
+    if (entryChoice === "roadmap") {
+      // OnboardingWizard updates the shared auth user via context as soon as
+      // it saves the profile + roadmap, so App re-renders into MainApp
+      // automatically — no reload needed.
+      return (
+        <OnboardingWizard onDone={() => {}} onCancel={() => setEntryChoice(null)} />
+      );
+    }
+    return (
+      <PracticeChoice
+        onQuickPractice={() => setEntryChoice("quick")}
+        onBuildRoadmap={() => setEntryChoice("roadmap")}
+      />
+    );
   }
   return <MainApp />;
 }
