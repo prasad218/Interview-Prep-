@@ -50,16 +50,6 @@ export async function updateLocation({ view, activeId }) {
   return json(res);
 }
 
-/** credential is the Google ID token from the "Sign in with Google" button. */
-export async function loginWithGoogle(credential) {
-  const res = await fetch(`${BASE}/auth/google`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ credential }),
-  });
-  return json(res);
-}
-
 export async function fetchMe() {
   const res = await fetch(`${BASE}/auth/me`, { headers: authHeaders() });
   return json(res);
@@ -278,4 +268,4 @@ export async function sendMessageStream({ conversationId, content, model }, call
       if (event === "error") callbacks.onError?.(parsed.message);
     }
   }
-}
+} 

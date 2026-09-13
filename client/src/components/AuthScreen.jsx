@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { useAuth } from "../context/AuthContext.jsx";
 import * as api from "../api/client.js";
 import { setToken } from "../api/authToken.js";
@@ -26,43 +26,6 @@ const FEATURES = [
     body: "Clear a readiness test and download a certificate + badge to show your preparation.",
   },
 ];
-
-function useGoogleButton(onCredential) {
-  const buttonRef = useRef(null);
-  const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
-
-  useEffect(() => {
-    if (!clientId) return undefined;
-    let cancelled = false;
-    let attempts = 0;
-
-    const tryInit = () => {
-      if (cancelled) return;
-      if (window.google?.accounts?.id && buttonRef.current) {
-        window.google.accounts.id.initialize({
-          client_id: clientId,
-          callback: (response) => onCredential(response.credential),
-        });
-        window.google.accounts.id.renderButton(buttonRef.current, {
-          theme: "filled_black",
-          size: "large",
-          shape: "pill",
-          width: 320,
-          text: "continue_with",
-        });
-      } else if (attempts < 30) {
-        attempts += 1;
-        setTimeout(tryInit, 250);
-      }
-    };
-    tryInit();
-    return () => {
-      cancelled = true;
-    };
-  }, [clientId, onCredential]);
-
-  return { buttonRef, clientId };
-}
 
 /** Shown once, right after signup, so the user can save the only credential
  * that gets them back into their (email-less) account from another device. */
@@ -112,7 +75,7 @@ function SavedCodeScreen({ code, onContinue }) {
 }
 
 export default function AuthScreen() {
-  const { login, loginWithGoogle, setUser } = useAuth();
+  const { login, setUser } = useAuth();
   const [mode, setMode] = useState("login"); // "login" | "signup"
   const [loginCode, setLoginCode] = useState("");
   const [password, setPassword] = useState("");
@@ -120,23 +83,6 @@ export default function AuthScreen() {
   const [error, setError] = useState(null);
   const [submitting, setSubmitting] = useState(false);
   const [pendingSignup, setPendingSignup] = useState(null); // { token, user } awaiting confirmation
-
-  const handleGoogleCredential = useCallback(
-    async (credential) => {
-      setError(null);
-      setSubmitting(true);
-      try {
-        await loginWithGoogle(credential);
-      } catch (e) {
-        setError(e.message);
-      } finally {
-        setSubmitting(false);
-      }
-    },
-    [loginWithGoogle]
-  );
-
-  const { buttonRef, clientId } = useGoogleButton(handleGoogleCredential);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -319,23 +265,6 @@ export default function AuthScreen() {
             </button>
           </form>
 
-          <div className="flex items-center gap-3 my-5">
-            <div className="h-px flex-1 bg-base-700" />
-            <span className="text-[11px] text-ink-500">OR</span>
-            <div className="h-px flex-1 bg-base-700" />
-          </div>
-
-          <div className="flex justify-center">
-            {clientId ? (
-              <div ref={buttonRef} />
-            ) : (
-              <div className="w-full text-center text-[11px] text-ink-500 border border-dashed border-base-600 rounded-lg px-3 py-2.5">
-                Google sign-in isn't configured yet — set{" "}
-                <code className="text-ink-300">VITE_GOOGLE_CLIENT_ID</code>.
-              </div>
-            )}
-          </div>
-
           <p className="text-[11px] text-ink-500 text-center mt-8">
             By continuing you agree this is a preparation tool — certificates
             issued here reflect practice performance and aren't official
@@ -345,4 +274,4 @@ export default function AuthScreen() {
       </div>
     </div>
   );
-}
+} 

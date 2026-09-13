@@ -37,13 +37,6 @@ export function AuthProvider({ children }) {
     setUser(user);
   }, []);
 
-  const loginWithGoogle = useCallback(async (credential) => {
-    setAuthError(null);
-    const { token, user } = await api.loginWithGoogle(credential);
-    setToken(token);
-    setUser(user);
-  }, []);
-
   const logout = useCallback(() => {
     setToken(null);
     setUser(null);
@@ -65,7 +58,6 @@ export function AuthProvider({ children }) {
         setAuthError,
         signup,
         login,
-        loginWithGoogle,
         logout,
         refreshUser,
       }}
@@ -79,4 +71,4 @@ export function useAuth() {
   const ctx = useContext(AuthContext);
   if (!ctx) throw new Error("useAuth must be used inside <AuthProvider>");
   return ctx;
-}
+} 
