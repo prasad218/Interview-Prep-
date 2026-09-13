@@ -169,7 +169,7 @@ function AiAvatar({ speaking }) {
           speaking ? "scale-105" : ""
         }`}
       >
-        RM
+        KI
       </div>
       {speaking && (
         <span className="absolute -inset-1 rounded-2xl border-2 border-accent/50 animate-pulseDot" />
@@ -702,7 +702,7 @@ export default function LiveInterview({ models, model, onModelChange }) {
               <div className="min-w-0">
                 <p className="text-xs text-ink-500 mb-0.5">AI Interviewer</p>
                 <p className="font-display font-semibold text-sm text-ink-100">
-                  Raj Malhotra
+                  Kiran
                 </p>
                 <p className="text-xs text-ink-500">Senior Hiring Manager</p>
               </div>
@@ -894,10 +894,10 @@ export default function LiveInterview({ models, model, onModelChange }) {
             </h3>
             <div className="flex items-center gap-3 mt-2">
               <div className="w-10 h-10 rounded-full bg-brand-gradient flex items-center justify-center text-white text-xs font-bold shrink-0">
-                RM
+                KI
               </div>
               <div className="min-w-0">
-                <p className="text-sm text-ink-100 truncate">Raj Malhotra</p>
+                <p className="text-sm text-ink-100 truncate">Kiran</p>
                 <p className="text-[11px] text-ink-500">Senior Hiring Manager</p>
               </div>
             </div>
@@ -914,4 +914,4 @@ export default function LiveInterview({ models, model, onModelChange }) {
       </div>
     </div>
   );
-}
+} 
