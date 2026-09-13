@@ -1,6 +1,5 @@
 import { Router } from "express";
-import { nanoid } from "nanoid";
-import { OAuth2Client } from "google-auth-library";
+import { nanoid, customAlphabet } from "nanoid";
 import * as db from "../db.js";
 import {
   hashPassword,
@@ -12,37 +11,36 @@ import {
 
 const router = Router();
 
-const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID || "";
-const googleClient = GOOGLE_CLIENT_ID ? new OAuth2Client(GOOGLE_CLIENT_ID) : null;
+// Unambiguous uppercase alphabet for login codes — no 0/O/1/I/L so codes
+// are easy to read back and type on another device.
+const generateCodePart = customAlphabet("ABCDEFGHJKMNPQRSTUVWXYZ23456789", 4);
 
-function isValidEmail(email) {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(email || ""));
+async function generateUniqueLoginCode() {
+  for (let attempt = 0; attempt < 10; attempt += 1) {
+    const code = `${generateCodePart()}-${generateCodePart()}`;
+    if (!(await db.findUserByLoginCode(code))) return code;
+  }
+  throw new Error("Could not generate a login code. Please try again.");
 }
 
-// POST /api/auth/signup  { name, email, password }
+// POST /api/auth/signup  { password }
 router.post("/signup", async (req, res) => {
-  const { name, email, password } = req.body || {};
-  if (!name || !name.trim()) {
-    return res.status(400).json({ error: "Name is required." });
-  }
-  if (!isValidEmail(email)) {
-    return res.status(400).json({ error: "Enter a valid email address." });
-  }
+  const { password } = req.body || {};
   if (!password || password.length < 8) {
     return res.status(400).json({ error: "Password must be at least 8 characters." });
   }
 
-  const existing = await db.findUserByEmail(email);
-  if (existing) {
-    return res.status(409).json({ error: "An account with that email already exists." });
+  let loginCode;
+  try {
+    loginCode = await generateUniqueLoginCode();
+  } catch (err) {
+    return res.status(500).json({ error: err.message });
   }
 
   const user = {
     id: nanoid(),
-    name: name.trim(),
-    email: email.trim().toLowerCase(),
+    loginCode,
     passwordHash: await hashPassword(password),
-    googleId: null,
     profile: null,
     roadmap: null,
     testResults: [],
@@ -54,77 +52,33 @@ router.post("/signup", async (req, res) => {
   res.status(201).json({ token, user: sanitizeUser(user) });
 });
 
-// POST /api/auth/login  { email, password }
+// POST /api/auth/login  { loginCode, password }
 router.post("/login", async (req, res) => {
-  const { email, password } = req.body || {};
-  const user = await db.findUserByEmail(email || "");
-  if (!user || !user.passwordHash) {
-    return res.status(401).json({
-      error: user
-        ? "This account uses Google sign-in — use the Google button instead."
-        : "No account found with that email.",
-    });
+  const { loginCode, password } = req.body || {};
+  const user = await db.findUserByLoginCode(String(loginCode || "").trim().toUpperCase());
+  if (!user) {
+    return res.status(401).json({ error: "No account found with that login code." });
   }
   const ok = await comparePassword(password || "", user.passwordHash);
   if (!ok) {
-    return res.status(401).json({ error: "Incorrect email or password." });
+    return res.status(401).json({ error: "Incorrect login code or password." });
   }
   const token = signToken(user);
   res.json({ token, user: sanitizeUser(user) });
 });
 
-// POST /api/auth/google  { credential }  -- credential is the Google ID token
-router.post("/google", async (req, res) => {
-  const { credential } = req.body || {};
-  if (!googleClient) {
-    return res.status(501).json({
-      error:
-        "Google sign-in isn't configured on this server yet. Set GOOGLE_CLIENT_ID in server/.env.",
-    });
-  }
-  if (!credential) {
-    return res.status(400).json({ error: "Missing Google credential." });
-  }
-
-  try {
-    const ticket = await googleClient.verifyIdToken({
-      idToken: credential,
-      audience: GOOGLE_CLIENT_ID,
-    });
-    const payload = ticket.getPayload();
-    if (!payload?.email) {
-      return res.status(400).json({ error: "Google account has no email." });
-    }
-
-    let user = await db.findUserByEmail(payload.email);
-    if (!user) {
-      user = {
-        id: nanoid(),
-        name: payload.name || payload.email.split("@")[0],
-        email: payload.email.toLowerCase(),
-        passwordHash: null,
-        googleId: payload.sub,
-        profile: null,
-        roadmap: null,
-        testResults: [],
-        createdAt: new Date().toISOString(),
-      };
-      await db.createUser(user);
-    } else if (!user.googleId) {
-      user = await db.updateUser(user.id, { googleId: payload.sub });
-    }
-
-    const token = signToken(user);
-    res.json({ token, user: sanitizeUser(user) });
-  } catch (err) {
-    console.error("Google sign-in error:", err.message);
-    res.status(401).json({ error: "Google sign-in failed. Please try again." });
-  }
-});
-
 // GET /api/auth/me
 router.get("/me", requireAuth, (req, res) => {
   res.json({ user: sanitizeUser(req.user) });
+});
+
+// PATCH /api/auth/location  { view, activeId }
+router.patch("/location", requireAuth, async (req, res) => {
+  const { view, activeId = null } = req.body || {};
+  const user = await db.updateUser(req.user.id, {
+    lastLocation: { view: view || null, activeId },
+  });
+  res.json({ user: sanitizeUser(user) });
 });
 
 // PATCH /api/auth/profile  { resumeText, targetRole, daysToPlacement, dailyHours, targetCompanies }
@@ -157,7 +111,6 @@ router.patch("/profile", requireAuth, async (req, res) => {
     updatedAt: new Date().toISOString(),
   };
 
-  // Changing the prep profile invalidates any previously generated roadmap.
   const user = await db.updateUser(req.user.id, { profile, roadmap: null });
   res.json({ user: sanitizeUser(user) });
 });
