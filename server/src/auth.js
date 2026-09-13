@@ -1,124 +1,56 @@
-import { Router } from "express";
-import { nanoid, customAlphabet } from "nanoid";
-import * as db from "../db.js";
-import {
-  hashPassword,
-  comparePassword,
-  signToken,
-  sanitizeUser,
-  requireAuth,
-} from "../auth.js";
+import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
+import * as db from "./db.js";
 
-const router = Router();
+const JWT_SECRET = process.env.JWT_SECRET;
+const JWT_EXPIRES_IN = "30d";
 
-// Unambiguous uppercase alphabet for login codes — no 0/O/1/I/L so codes
-// are easy to read back and type on another device.
-const generateCodePart = customAlphabet("ABCDEFGHJKMNPQRSTUVWXYZ23456789", 4);
-
-async function generateUniqueLoginCode() {
-  for (let attempt = 0; attempt < 10; attempt += 1) {
-    const code = `${generateCodePart()}-${generateCodePart()}`;
-    // eslint-disable-next-line no-await-in-loop
-    if (!(await db.findUserByLoginCode(code))) return code;
-  }
-  throw new Error("Could not generate a login code. Please try again.");
+if (!JWT_SECRET) {
+  console.warn(
+    "\n⚠️  JWT_SECRET is not set — using an insecure development fallback.\n" +
+      "   Set a long random JWT_SECRET in server/.env before deploying.\n"
+  );
 }
 
-// POST /api/auth/signup  { password }
-// No email/name — the account is identified by an auto-generated login
-// code (e.g. "AB3D-9KXQ") shown to the user once after signup.
-router.post("/signup", async (req, res) => {
-  const { password } = req.body || {};
-  if (!password || password.length < 8) {
-    return res.status(400).json({ error: "Password must be at least 8 characters." });
-  }
+const SECRET = JWT_SECRET || "dev-only-insecure-secret-change-me";
 
-  let loginCode;
+export function hashPassword(password) {
+  return bcrypt.hash(password, 10);
+}
+
+export function comparePassword(password, hash) {
+  return bcrypt.compare(password, hash);
+}
+
+export function signToken(user) {
+  return jwt.sign({ sub: user.id }, SECRET, { expiresIn: JWT_EXPIRES_IN });
+}
+
+export function verifyToken(token) {
+  return jwt.verify(token, SECRET);
+}
+
+/** Strips sensitive fields before a user record ever goes to the client. */
+export function sanitizeUser(user) {
+  if (!user) return null;
+  const { passwordHash, ...safe } = user;
+  return safe;
+}
+
+/** Express middleware: requires a valid `Authorization: Bearer <token>` header. */
+export async function requireAuth(req, res, next) {
+  const header = req.headers.authorization || "";
+  const token = header.startsWith("Bearer ") ? header.slice(7) : null;
+  if (!token) {
+    return res.status(401).json({ error: "Not signed in." });
+  }
   try {
-    loginCode = await generateUniqueLoginCode();
-  } catch (err) {
-    return res.status(500).json({ error: err.message });
+    const payload = verifyToken(token);
+    const user = await db.findUserById(payload.sub);
+    if (!user) return res.status(401).json({ error: "Account no longer exists." });
+    req.user = user;
+    next();
+  } catch {
+    return res.status(401).json({ error: "Your session has expired. Please sign in again." });
   }
-
-  const user = {
-    id: nanoid(),
-    loginCode,
-    passwordHash: await hashPassword(password),
-    profile: null,
-    roadmap: null,
-    testResults: [],
-    createdAt: new Date().toISOString(),
-  };
-
-  await db.createUser(user);
-  const token = signToken(user);
-  res.status(201).json({ token, user: sanitizeUser(user) });
-});
-
-// POST /api/auth/login  { loginCode, password }
-router.post("/login", async (req, res) => {
-  const { loginCode, password } = req.body || {};
-  const user = await db.findUserByLoginCode(String(loginCode || "").trim().toUpperCase());
-  if (!user) {
-    return res.status(401).json({ error: "No account found with that login code." });
-  }
-  const ok = await comparePassword(password || "", user.passwordHash);
-  if (!ok) {
-    return res.status(401).json({ error: "Incorrect login code or password." });
-  }
-  const token = signToken(user);
-  res.json({ token, user: sanitizeUser(user) });
-});
-
-// GET /api/auth/me
-router.get("/me", requireAuth, (req, res) => {
-  res.json({ user: sanitizeUser(req.user) });
-});
-
-// PATCH /api/auth/location  { view, activeId }
-// Remembers which screen the user was last on so sign-in can drop them
-// back where they left off. Best-effort — the client ignores failures.
-router.patch("/location", requireAuth, async (req, res) => {
-  const { view, activeId = null } = req.body || {};
-  const user = await db.updateUser(req.user.id, {
-    lastLocation: { view: view || null, activeId },
-  });
-  res.json({ user: sanitizeUser(user) });
-});
-
-// PATCH /api/auth/profile  { resumeText, targetRole, daysToPlacement, dailyHours, targetCompanies }
-router.patch("/profile", requireAuth, async (req, res) => {
-  const {
-    resumeText,
-    targetRole,
-    daysToPlacement,
-    dailyHours,
-    targetCompanies = [],
-  } = req.body || {};
-
-  if (!resumeText || !resumeText.trim()) {
-    return res.status(400).json({ error: "resumeText is required." });
-  }
-  if (!targetRole || !targetRole.trim()) {
-    return res.status(400).json({ error: "targetRole is required." });
-  }
-  const days = Math.max(3, Math.min(365, Number(daysToPlacement) || 30));
-  const hours = Math.max(0.5, Math.min(16, Number(dailyHours) || 2));
-
-  const profile = {
-    resumeText: resumeText.trim(),
-    targetRole: targetRole.trim(),
-    daysToPlacement: days,
-    dailyHours: hours,
-    targetCompanies: Array.isArray(targetCompanies)
-      ? targetCompanies.filter(Boolean).map((c) => String(c).trim()).slice(0, 8)
-      : [],
-    updatedAt: new Date().toISOString(),
-  };
-
-  // Changing the prep profile invalidates any previously generated roadmap.
-  const user = await db.updateUser(req.user.id, { profile, roadmap: null });
-  res.json({ user: sanitizeUser(user) });
-});
-
-export default router; 
+}
