@@ -3,6 +3,7 @@ import * as api from "../api/client.js";
 import ModelSelector from "./ModelSelector.jsx";
 import ResumeSetupForm, { INTERVIEW_CATEGORIES } from "./ResumeSetupForm.jsx";
 import { useAuth } from "../context/AuthContext.jsx";
+import { setToken } from "../api/authToken.js";
 
 const CREDIT_COST_PER_INTERVIEW = 50;
 
@@ -379,6 +380,13 @@ export default function LiveInterview({ models, model, onModelChange }) {
     } catch (e) {
       if (e.status === 402) {
         setPaywall(e);
+      } else if (e.status === 401) {
+        // Session token is missing/expired — clear the stale local state and
+        // kick them back to sign-in with a clear message instead of showing
+        // the raw server string ("Not signed in.") on this screen.
+        setToken(null);
+        setUser(null);
+        setError("Your session expired — please sign in again to start a live interview.");
       } else {
         setError(e.message);
       }
