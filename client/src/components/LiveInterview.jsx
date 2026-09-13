@@ -211,6 +211,7 @@ export default function LiveInterview({ models, model, onModelChange }) {
 
   // --- Report state ---
   const [report, setReport] = useState(null);
+  const [downloadingPdf, setDownloadingPdf] = useState(false);
 
   const videoRef = useRef(null);
   const streamRef = useRef(null);
@@ -497,7 +498,6 @@ export default function LiveInterview({ models, model, onModelChange }) {
   }
 
   // ---------------------------------------------------------------- REPORT
-  const [downloadingPdf, setDownloadingPdf] = useState(false);
   const handleDownloadReport = async () => {
     if (!report || downloadingPdf) return;
     setDownloadingPdf(true);
