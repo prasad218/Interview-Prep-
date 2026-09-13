@@ -363,7 +363,12 @@ export default function App() {
 
   if (!user.profile) {
     if (entryChoice === "quick") {
-      return <QuickPractice onBuildRoadmap={() => setEntryChoice("roadmap")} />;
+      return (
+        <QuickPractice
+          onBuildRoadmap={() => setEntryChoice("roadmap")}
+          onBack={() => setEntryChoice(null)}
+        />
+      );
     }
     if (entryChoice === "roadmap") {
       // OnboardingWizard updates the shared auth user via context as soon as
@@ -381,4 +386,4 @@ export default function App() {
     );
   }
   return <MainApp />;
-}
+} 

@@ -1,9 +1,20 @@
 import logo from "../assets/logo.png";
+import { useAuth } from "../context/AuthContext.jsx";
 
 export default function PracticeChoice({ onQuickPractice, onBuildRoadmap }) {
+  const { logout } = useAuth();
+
   return (
     <div className="h-screen w-screen relative flex flex-col items-center justify-center text-center px-6 overflow-hidden bg-base-950">
       <div className="absolute inset-0 bg-aurora pointer-events-none" />
+
+      <button
+        onClick={logout}
+        title="Log out"
+        className="absolute top-4 left-4 sm:top-6 sm:left-6 z-10 flex items-center gap-1.5 text-ink-500 hover:text-ink-100 text-xs font-medium px-3 py-1.5 rounded-lg border border-base-700 hover:border-base-600 bg-base-900/40 transition-colors"
+      >
+        <span>←</span> Log out
+      </button>
 
       <div className="relative z-10 flex flex-col items-center max-w-md w-full">
         <div className="w-14 h-14 rounded-2xl overflow-hidden shadow-glow mb-5 animate-floatSlow">

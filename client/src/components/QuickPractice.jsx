@@ -4,7 +4,7 @@ import InterviewPrep from "./InterviewPrep.jsx";
 import LiveInterview from "./LiveInterview.jsx";
 import logo from "../assets/logo.png";
 
-export default function QuickPractice({ onBuildRoadmap }) {
+export default function QuickPractice({ onBuildRoadmap, onBack }) {
   const [mode, setMode] = useState("interview"); // "interview" | "live"
   const [model, setModel] = useState("openai/gpt-4o-mini");
   const [models, setModels] = useState([
@@ -19,6 +19,15 @@ export default function QuickPractice({ onBuildRoadmap }) {
     <div className="h-screen w-screen flex flex-col bg-base-950">
       <header className="shrink-0 flex items-center justify-between gap-3 px-4 sm:px-6 py-3 border-b border-base-700">
         <div className="flex items-center gap-2.5 min-w-0">
+          {onBack && (
+            <button
+              onClick={onBack}
+              title="Back"
+              className="shrink-0 w-8 h-8 flex items-center justify-center rounded-lg text-ink-400 hover:text-ink-100 hover:bg-base-800 transition-colors"
+            >
+              ←
+            </button>
+          )}
           <div className="w-8 h-8 rounded-lg overflow-hidden shrink-0">
             <img src={logo} alt="Interview Prep" className="w-full h-full object-contain" />
           </div>
