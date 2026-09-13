@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import Sidebar from "./components/Sidebar.jsx";
 import Header from "./components/Header.jsx";
 import ChatArea from "./components/ChatArea.jsx";
@@ -55,10 +55,15 @@ function GenerateRoadmapPrompt({ onGenerate, generating, error }) {
   );
 }
 
+const RESUMABLE_VIEWS = ["roadmap", "test", "interview", "live", "chat"];
+
 function MainApp() {
   const { user, setUser, logout } = useAuth();
   const [editingProfile, setEditingProfile] = useState(false);
-  const [view, setView] = useState("roadmap"); // "roadmap" | "test" | "interview" | "live" | "chat"
+  const [view, setView] = useState(() => {
+    const savedView = user?.lastLocation?.view;
+    return RESUMABLE_VIEWS.includes(savedView) ? savedView : "roadmap";
+  }); // "roadmap" | "test" | "interview" | "live" | "chat"
   const [sidebarOpen, setSidebarOpen] = useState(
     () => typeof window === "undefined" || window.innerWidth >= 768
   );
@@ -75,11 +80,38 @@ function MainApp() {
   const [testPreselectCompany, setTestPreselectCompany] = useState(null);
 
   const activeConversation = conversations.find((c) => c.id === activeId) || null;
+  const restoredChat = useRef(false);
+  const skipFirstPersist = useRef(true);
 
   useEffect(() => {
     api.fetchModels().then(setModels).catch(() => {});
     api.fetchConversations().then(setConversations).catch((e) => setError(e.message));
   }, []);
+
+  // If the user was last mid-conversation, reopen that exact chat once the
+  // conversation list has loaded.
+  useEffect(() => {
+    if (restoredChat.current) return;
+    if (view !== "chat") return;
+    const savedId = user?.lastLocation?.activeId;
+    if (!savedId || conversations.length === 0) return;
+    if (!conversations.some((c) => c.id === savedId)) return;
+    restoredChat.current = true;
+    loadConversation(savedId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [conversations, view, user]);
+
+  // Persist the current screen (and active chat, if any) so the next
+  // sign-in can drop the user back exactly where they left off.
+  useEffect(() => {
+    if (skipFirstPersist.current) {
+      skipFirstPersist.current = false;
+      return;
+    }
+    api
+      .updateLocation({ view, activeId: view === "chat" ? activeId : null })
+      .catch(() => {});
+  }, [view, activeId]);
 
   const closeSidebarOnMobile = useCallback(() => {
     if (typeof window !== "undefined" && window.innerWidth < 768) {

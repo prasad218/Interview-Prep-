@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useAuth } from "../context/AuthContext.jsx";
+import * as api from "../api/client.js";
+import { setToken } from "../api/authToken.js";
 import logo from "../assets/logo.png";
 
 const FEATURES = [
@@ -62,14 +64,62 @@ function useGoogleButton(onCredential) {
   return { buttonRef, clientId };
 }
 
+/** Shown once, right after signup, so the user can save the only credential
+ * that gets them back into their (email-less) account from another device. */
+function SavedCodeScreen({ code, onContinue }) {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(code);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      // Clipboard API unavailable — the code is still selectable/visible.
+    }
+  };
+
+  return (
+    <div className="w-full max-w-sm text-center">
+      <div className="w-14 h-14 rounded-2xl bg-brand-gradient shadow-glow mx-auto mb-5 flex items-center justify-center">
+        <span className="text-white text-2xl">🔑</span>
+      </div>
+      <h2 className="font-display font-bold text-xl mb-2">Save your login code</h2>
+      <p className="text-sm text-ink-500 mb-6 leading-relaxed">
+        This code plus your password is how you'll sign back in — from this
+        browser or any other device. We don't collect an email, so if you
+        lose the code, there's no way to recover the account.
+      </p>
+      <div className="bg-base-800 border border-base-600 rounded-xl px-4 py-4 mb-4">
+        <p className="font-mono text-2xl tracking-widest text-gradient-brand font-bold select-all">
+          {code}
+        </p>
+      </div>
+      <button
+        onClick={handleCopy}
+        className="w-full rounded-xl border border-base-600 hover:border-accent transition-colors px-4 py-2.5 text-sm font-semibold text-ink-100 mb-3"
+      >
+        {copied ? "Copied!" : "Copy code"}
+      </button>
+      <button
+        onClick={onContinue}
+        className="w-full rounded-xl bg-brand-gradient hover:opacity-90 shadow-glow-sm transition-opacity px-4 py-2.5 text-sm font-semibold text-white"
+      >
+        I've saved it — continue
+      </button>
+    </div>
+  );
+}
+
 export default function AuthScreen() {
-  const { login, signup, loginWithGoogle } = useAuth();
+  const { login, loginWithGoogle, setUser } = useAuth();
   const [mode, setMode] = useState("login"); // "login" | "signup"
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
+  const [loginCode, setLoginCode] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState(null);
   const [submitting, setSubmitting] = useState(false);
+  const [pendingSignup, setPendingSignup] = useState(null); // { token, user } awaiting confirmation
 
   const handleGoogleCredential = useCallback(
     async (credential) => {
@@ -94,9 +144,13 @@ export default function AuthScreen() {
     setSubmitting(true);
     try {
       if (mode === "signup") {
-        await signup({ name, email, password });
+        if (password !== confirmPassword) {
+          throw new Error("Passwords don't match.");
+        }
+        const { token, user } = await api.signup({ password });
+        setPendingSignup({ token, user });
       } else {
-        await login({ email, password });
+        await login({ loginCode: loginCode.trim(), password });
       }
     } catch (e) {
       setError(e.message);
@@ -104,6 +158,20 @@ export default function AuthScreen() {
       setSubmitting(false);
     }
   };
+
+  const finishSignup = () => {
+    if (!pendingSignup) return;
+    setToken(pendingSignup.token);
+    setUser(pendingSignup.user);
+  };
+
+  if (pendingSignup) {
+    return (
+      <div className="min-h-screen w-full flex items-center justify-center bg-base-950 text-ink-100 p-6">
+        <SavedCodeScreen code={pendingSignup.user.loginCode} onContinue={finishSignup} />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen w-full flex bg-base-950 text-ink-100">
@@ -187,34 +255,24 @@ export default function AuthScreen() {
           </h2>
           <p className="text-sm text-ink-500 mb-6">
             {mode === "login"
-              ? "Sign in to pick up your roadmap where you left off."
-              : "Create a free account — takes under a minute."}
+              ? "Enter your login code and password to pick up where you left off."
+              : "Just set a password — no email needed. You'll get a login code to save."}
           </p>
 
           <form onSubmit={handleSubmit} className="space-y-3">
-            {mode === "signup" && (
+            {mode === "login" && (
               <div>
-                <label className="text-xs text-ink-500 block mb-1">Full name</label>
+                <label className="text-xs text-ink-500 block mb-1">Login code</label>
                 <input
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
+                  value={loginCode}
+                  onChange={(e) => setLoginCode(e.target.value.toUpperCase())}
                   required
-                  placeholder="Priya Sharma"
-                  className="w-full bg-base-800 border border-base-600 rounded-lg px-3 py-2.5 text-sm text-ink-100 placeholder:text-ink-500 outline-none focus:border-accent"
+                  placeholder="XXXX-XXXX"
+                  autoCapitalize="characters"
+                  className="w-full bg-base-800 border border-base-600 rounded-lg px-3 py-2.5 text-sm text-ink-100 placeholder:text-ink-500 outline-none focus:border-accent font-mono tracking-widest"
                 />
               </div>
             )}
-            <div>
-              <label className="text-xs text-ink-500 block mb-1">Email</label>
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                placeholder="you@example.com"
-                className="w-full bg-base-800 border border-base-600 rounded-lg px-3 py-2.5 text-sm text-ink-100 placeholder:text-ink-500 outline-none focus:border-accent"
-              />
-            </div>
             <div>
               <label className="text-xs text-ink-500 block mb-1">Password</label>
               <input
@@ -227,6 +285,20 @@ export default function AuthScreen() {
                 className="w-full bg-base-800 border border-base-600 rounded-lg px-3 py-2.5 text-sm text-ink-100 placeholder:text-ink-500 outline-none focus:border-accent"
               />
             </div>
+            {mode === "signup" && (
+              <div>
+                <label className="text-xs text-ink-500 block mb-1">Confirm password</label>
+                <input
+                  type="password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  required
+                  minLength={8}
+                  placeholder="Type it again"
+                  className="w-full bg-base-800 border border-base-600 rounded-lg px-3 py-2.5 text-sm text-ink-100 placeholder:text-ink-500 outline-none focus:border-accent"
+                />
+              </div>
+            )}
 
             {error && (
               <div className="bg-signal-rose/10 border border-signal-rose/30 text-signal-rose text-xs rounded-lg px-3 py-2">

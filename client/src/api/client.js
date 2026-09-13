@@ -22,20 +22,30 @@ function authHeaders(extra = {}) {
 
 // ------------------------------------------------------------------ Auth
 
-export async function signup({ name, email, password }) {
+export async function signup({ password }) {
   const res = await fetch(`${BASE}/auth/signup`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ name, email, password }),
+    body: JSON.stringify({ password }),
   });
   return json(res);
 }
 
-export async function login({ email, password }) {
+export async function login({ loginCode, password }) {
   const res = await fetch(`${BASE}/auth/login`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email, password }),
+    body: JSON.stringify({ loginCode, password }),
+  });
+  return json(res);
+}
+
+/** Saves which screen the user is on so it can be restored on their next visit. */
+export async function updateLocation({ view, activeId }) {
+  const res = await fetch(`${BASE}/auth/location`, {
+    method: "PATCH",
+    headers: authHeaders({ "Content-Type": "application/json" }),
+    body: JSON.stringify({ view, activeId }),
   });
   return json(res);
 }

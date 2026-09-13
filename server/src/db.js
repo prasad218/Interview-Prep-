@@ -128,11 +128,20 @@ export function addMessage(conversationId, message) {
 export function findUserByEmail(email) {
   return withLock(async () => {
     const db = await readDb();
+    if (!email) return null;
     return (
       db.users.find(
-        (u) => u.email.toLowerCase() === String(email).toLowerCase()
+        (u) => u.email && u.email.toLowerCase() === String(email).toLowerCase()
       ) || null
     );
+  });
+}
+
+export function findUserByLoginCode(loginCode) {
+  return withLock(async () => {
+    const db = await readDb();
+    if (!loginCode) return null;
+    return db.users.find((u) => u.loginCode === loginCode) || null;
   });
 }
 
