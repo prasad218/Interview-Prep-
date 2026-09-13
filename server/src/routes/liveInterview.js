@@ -1,8 +1,27 @@
 import { Router } from "express";
 import { nanoid } from "nanoid";
 import { chatCompletion } from "../openrouter.js";
+import { requireAuth } from "../auth.js";
+import * as db from "../db.js";
 
 const router = Router();
+
+// --------------------------------------------------------------- Pricing
+//
+// New users get a 50-credit signup bonus (see routes/auth.js) — enough for
+// exactly one free live interview. After that, running out locks the
+// feature until they buy another pack. There's no payment gateway wired up
+// (small-scale project, manual PhonePe transfers), so the flow is:
+//   1. App shows this link + price when credits run out.
+//   2. Candidate pays ₹90 via PhonePe and submits the form as proof.
+//   3. You check the form response, then grant credits by calling
+//      POST /api/admin/grant-credits with the ADMIN_SECRET header — see
+//      routes/admin.js.
+const CREDIT_COST_PER_INTERVIEW = 50;
+const PAID_PACK_CREDITS = 200; // 4 more sessions
+const PAID_PACK_PRICE_INR = 90;
+const PAYMENT_FORM_URL =
+  "https://docs.google.com/forms/d/e/1FAIpQLSeXnkzMsXsFTIGe4tGDe5RwpUAO0sKowMgY_GPJ9NFR0vUYlA/viewform";
 
 // Live interviews are short-lived, stateful conversations — kept in memory
 // per session rather than in db.json (nothing here needs to survive a
@@ -40,7 +59,7 @@ function safeParseJSON(raw) {
 
 function systemPersona() {
   return (
-    "You are Raj Malhotra, a senior hiring manager with 10+ years of experience running live " +
+    "You are Kiran, a senior hiring manager with 10+ years of experience running live " +
     "mock interviews for a job-prep platform. You ask exactly one question at a time, listen to the " +
     "candidate's answer, and adapt what you ask next based on both their resume and what they just said. " +
     "You are encouraging but honest — you don't inflate weak answers. You never ask more than one " +
@@ -150,7 +169,23 @@ async function askNextOrFinish(session) {
 
 // POST /api/live-interview/start
 // body: { resumeText, role, experience, numQuestions, focusAreas, model }
-router.post("/start", async (req, res) => {
+router.post("/start", requireAuth, async (req, res) => {
+  // Older accounts created before credits existed default to the same
+  // 50-credit free bonus rather than being locked out retroactively.
+  const currentCredits = req.user.liveInterviewCredits ?? 50;
+
+  if (currentCredits < CREDIT_COST_PER_INTERVIEW) {
+    return res.status(402).json({
+      error: "You're out of live interview credits.",
+      creditsRemaining: currentCredits,
+      creditCost: CREDIT_COST_PER_INTERVIEW,
+      paymentLink: PAYMENT_FORM_URL,
+      packPrice: PAID_PACK_PRICE_INR,
+      packCredits: PAID_PACK_CREDITS,
+      packUses: PAID_PACK_CREDITS / CREDIT_COST_PER_INTERVIEW,
+    });
+  }
+
   const {
     resumeText,
     role,
@@ -187,12 +222,18 @@ router.post("/start", async (req, res) => {
     const first = await askFirstQuestion(session);
     session.pending = first;
     sessions.set(session.id, session);
+
+    const updatedUser = await db.updateUser(req.user.id, {
+      liveInterviewCredits: currentCredits - CREDIT_COST_PER_INTERVIEW,
+    });
+
     res.json({
       sessionId: session.id,
       question: first.question,
       category: first.category,
       difficulty: first.difficulty,
       progress: { current: 1, total: session.numQuestions },
+      creditsRemaining: updatedUser.liveInterviewCredits,
     });
   } catch (err) {
     console.error("Live interview start error:", err.message);

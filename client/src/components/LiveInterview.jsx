@@ -2,6 +2,9 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import * as api from "../api/client.js";
 import ModelSelector from "./ModelSelector.jsx";
 import ResumeSetupForm, { INTERVIEW_CATEGORIES } from "./ResumeSetupForm.jsx";
+import { useAuth } from "../context/AuthContext.jsx";
+
+const CREDIT_COST_PER_INTERVIEW = 50;
 
 const DIFFICULTY_STYLE = {
   Easy: "bg-signal-teal/15 text-signal-teal border-signal-teal/30",
@@ -179,7 +182,14 @@ function AiAvatar({ speaking }) {
 }
 
 export default function LiveInterview({ models, model, onModelChange }) {
+  const { user, setUser, refreshUser } = useAuth();
   const [phase, setPhase] = useState("setup"); // "setup" | "live" | "report"
+  const [paywall, setPaywall] = useState(null); // set when out of credits
+  const [checkingBalance, setCheckingBalance] = useState(false);
+
+  const credits = user?.liveInterviewCredits ?? 50;
+  const usesLeft = Math.max(0, Math.floor(credits / CREDIT_COST_PER_INTERVIEW));
+  const locked = credits < CREDIT_COST_PER_INTERVIEW;
 
   // --- Setup state ---
   const [resumeText, setResumeText] = useState("");
@@ -319,6 +329,20 @@ export default function LiveInterview({ models, model, onModelChange }) {
     setError(null);
   };
 
+  const handleCheckBalance = async () => {
+    setCheckingBalance(true);
+    try {
+      const updated = await refreshUser();
+      if ((updated?.liveInterviewCredits ?? 0) >= CREDIT_COST_PER_INTERVIEW) {
+        setPaywall(null);
+      }
+    } catch {
+      // Ignore — the paywall just stays up and they can try again.
+    } finally {
+      setCheckingBalance(false);
+    }
+  };
+
   const handleStart = async () => {
     if (!resumeText.trim()) {
       setError("Upload a resume or paste your resume text first.");
@@ -348,9 +372,16 @@ export default function LiveInterview({ models, model, onModelChange }) {
       setTranscript([]);
       setLastFeedback(null);
       setPhase("live");
+      if (typeof res.creditsRemaining === "number") {
+        setUser((prev) => (prev ? { ...prev, liveInterviewCredits: res.creditsRemaining } : prev));
+      }
       setTimeout(() => speak(res.question), 300);
     } catch (e) {
-      setError(e.message);
+      if (e.status === 402) {
+        setPaywall(e);
+      } else {
+        setError(e.message);
+      }
     } finally {
       setStarting(false);
     }
@@ -421,6 +452,59 @@ export default function LiveInterview({ models, model, onModelChange }) {
 
   // ---------------------------------------------------------------- SETUP
   if (phase === "setup") {
+    if (locked) {
+      const info = paywall || {};
+      const packPrice = info.packPrice ?? 90;
+      const packUses = info.packUses ?? 4;
+      const paymentLink =
+        info.paymentLink ||
+        "https://docs.google.com/forms/d/e/1FAIpQLSeXnkzMsXsFTIGe4tGDe5RwpUAO0sKowMgY_GPJ9NFR0vUYlA/viewform";
+
+      return (
+        <div className="flex-1 overflow-y-auto">
+          <div className="max-w-lg mx-auto px-4 py-10">
+            <div className="rounded-2xl border border-base-600 bg-base-900 shadow-card p-6 text-center space-y-4">
+              <div className="w-12 h-12 mx-auto rounded-2xl bg-signal-amber/15 border border-signal-amber/30 flex items-center justify-center text-xl">
+                🔒
+              </div>
+              <div>
+                <h1 className="font-display font-bold text-lg text-ink-100">
+                  You've used your free live interview
+                </h1>
+                <p className="text-sm text-ink-500 mt-1.5 leading-relaxed">
+                  Every new account gets one free live mock interview. To
+                  keep practicing, unlock {packUses} more sessions for ₹{packPrice}.
+                </p>
+              </div>
+
+              <a
+                href={paymentLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center gap-2 w-full rounded-xl bg-brand-gradient hover:opacity-90 shadow-glow-sm transition-opacity px-5 py-2.5 text-sm font-semibold text-white"
+              >
+                Pay ₹{packPrice} to unlock {packUses} sessions →
+              </a>
+
+              <p className="text-xs text-ink-500 leading-relaxed">
+                Pay via the PhonePe details on that page, then submit the
+                form as proof. Credits are added manually after payment is
+                verified — this can take a little while, not instant.
+              </p>
+
+              <button
+                onClick={handleCheckBalance}
+                disabled={checkingBalance}
+                className="text-xs font-medium text-ink-300 hover:text-ink-100 underline underline-offset-2 disabled:opacity-50"
+              >
+                {checkingBalance ? "Checking…" : "I've paid — check my balance"}
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
     return (
       <div className="flex-1 overflow-y-auto">
         <div className="max-w-4xl mx-auto px-4 py-6 space-y-6">
@@ -430,6 +514,9 @@ export default function LiveInterview({ models, model, onModelChange }) {
               <span className="flex items-center gap-1.5 text-[11px] font-medium text-signal-rose bg-signal-rose/10 border border-signal-rose/30 rounded-full px-2 py-0.5">
                 <span className="w-1.5 h-1.5 rounded-full bg-signal-rose animate-pulseDot" />
                 Live
+              </span>
+              <span className="flex items-center gap-1.5 text-[11px] font-medium text-signal-teal bg-signal-teal/10 border border-signal-teal/30 rounded-full px-2 py-0.5">
+                {usesLeft} {usesLeft === 1 ? "use" : "uses"} left
               </span>
             </h1>
             <p className="text-sm text-ink-500 mt-1">
@@ -914,4 +1001,4 @@ export default function LiveInterview({ models, model, onModelChange }) {
       </div>
     </div>
   );
-} 
+}

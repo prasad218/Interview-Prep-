@@ -9,6 +9,7 @@ import liveInterviewRouter from "./routes/liveInterview.js";
 import authRouter from "./routes/auth.js";
 import roadmapRouter from "./routes/roadmap.js";
 import testRouter from "./routes/test.js";
+import adminRouter from "./routes/admin.js";
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -28,6 +29,7 @@ app.use("/api/live-interview", liveInterviewRouter);
 app.use("/api/auth", authRouter);
 app.use("/api/roadmap", roadmapRouter);
 app.use("/api/test", testRouter);
+app.use("/api/admin", adminRouter);
 
 app.listen(PORT, () => {
   if (!process.env.OPENROUTER_API_KEY) {

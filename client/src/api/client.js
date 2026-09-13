@@ -5,7 +5,9 @@ const BASE = `${import.meta.env.VITE_API_URL || ""}/api`;
 async function json(res) {
   if (!res.ok) {
     const body = await res.json().catch(() => ({}));
-    throw new Error(body.error || `Request failed (${res.status})`);
+    const err = new Error(body.error || `Request failed (${res.status})`);
+    Object.assign(err, body, { status: res.status });
+    throw err;
   }
   return res.json();
 }
@@ -189,7 +191,7 @@ export async function generateInterviewQuestions(payload) {
 export async function startLiveInterview(payload) {
   const res = await fetch(`${BASE}/live-interview/start`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: authHeaders({ "Content-Type": "application/json" }),
     body: JSON.stringify(payload),
   });
   return json(res);

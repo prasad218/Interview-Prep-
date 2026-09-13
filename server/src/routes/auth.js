@@ -44,6 +44,8 @@ router.post("/signup", async (req, res) => {
     profile: null,
     roadmap: null,
     testResults: [],
+    // New-user bonus: 50 credits = exactly one free live interview session.
+    liveInterviewCredits: 50,
     createdAt: new Date().toISOString(),
   };
 
