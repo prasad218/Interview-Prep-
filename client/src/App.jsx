@@ -12,12 +12,13 @@ import Roadmap from "./components/Roadmap.jsx";
 import TestCenter from "./components/TestCenter.jsx";
 import { useAuth } from "./context/AuthContext.jsx";
 import * as api from "./api/client.js";
+import logo from "./assets/logo.png";
 
 function SplashScreen() {
   return (
     <div className="h-screen w-screen flex items-center justify-center bg-base-950 bg-aurora">
-      <div className="w-12 h-12 rounded-2xl bg-brand-gradient shadow-glow flex items-center justify-center animate-floatSlow">
-        <span className="text-white text-xl font-bold">✦</span>
+      <div className="w-14 h-14 rounded-2xl overflow-hidden shadow-glow animate-floatSlow">
+        <img src={logo} alt="Interview Prep" className="w-full h-full object-contain" />
       </div>
     </div>
   );

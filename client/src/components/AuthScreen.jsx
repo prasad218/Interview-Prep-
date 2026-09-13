@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useAuth } from "../context/AuthContext.jsx";
+import logo from "../assets/logo.png";
 
 const FEATURES = [
   {
@@ -110,8 +111,8 @@ export default function AuthScreen() {
       <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden bg-aurora border-r border-base-700 flex-col justify-between p-12">
         <div>
           <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-brand-gradient shadow-glow-sm flex items-center justify-center shrink-0">
-              <span className="text-white text-base font-bold">✦</span>
+            <div className="w-9 h-9 rounded-xl overflow-hidden shrink-0">
+              <img src={logo} alt="Interview Prep" className="w-full h-full object-contain" />
             </div>
             <span className="font-display font-bold text-lg">Interview Prep</span>
           </div>
@@ -152,8 +153,8 @@ export default function AuthScreen() {
       <div className="flex-1 flex items-center justify-center p-6 sm:p-10">
         <div className="w-full max-w-sm">
           <div className="lg:hidden flex items-center gap-2.5 justify-center mb-8">
-            <div className="w-8 h-8 rounded-xl bg-brand-gradient shadow-glow-sm flex items-center justify-center shrink-0">
-              <span className="text-white text-sm font-bold">✦</span>
+            <div className="w-8 h-8 rounded-xl overflow-hidden shrink-0">
+              <img src={logo} alt="Interview Prep" className="w-full h-full object-contain" />
             </div>
             <span className="font-display font-bold text-lg">Interview Prep</span>
           </div>
