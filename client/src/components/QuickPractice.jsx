@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import * as api from "../api/client.js";
 import InterviewPrep from "./InterviewPrep.jsx";
-import LiveInterview from "./LiveInterview.jsx";
+import LiveInterview from "./LiveInterview.jsx";  
 import logo from "../assets/logo.png";
 
 export default function QuickPractice({ onBuildRoadmap, onBack }) {

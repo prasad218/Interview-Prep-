@@ -197,6 +197,54 @@ export async function startLiveInterview(payload) {
   return json(res);
 }
 
+/** Redeems a payment code (from the founder's email) + the candidate's name for extra live-interview credits. */
+export async function redeemCode({ code, name }) {
+  const res = await fetch(`${BASE}/redeem`, {
+    method: "POST",
+    headers: authHeaders({ "Content-Type": "application/json" }),
+    body: JSON.stringify({ code, name }),
+  });
+  return json(res);
+}
+
+// ----------------------------------------------------------------- Admin
+//
+// Separate from the candidate auth above — the admin dashboard isn't a
+// user account, it's gated by a single shared secret (ADMIN_SECRET on the
+// server). The client holds onto that secret (see api/adminAuth.js) and
+// sends it as the x-admin-secret header on every admin call below.
+
+function adminHeaders(secret, extra = {}) {
+  return { ...extra, "x-admin-secret": secret };
+}
+
+/** Verifies an admin secret is correct before switching into the dashboard. */
+export async function adminLogin(secret) {
+  const res = await fetch(`${BASE}/admin/login`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ secret }),
+  });
+  return json(res);
+}
+
+/** Every redemption code ever generated, newest first, with who redeemed each one (if anyone). */
+export async function fetchRedemptions(secret) {
+  const res = await fetch(`${BASE}/admin/redemptions`, {
+    headers: adminHeaders(secret),
+  });
+  return json(res);
+}
+
+/** Generates a fresh one-time code after you've verified a candidate's payment. */
+export async function adminGenerateCode(secret) {
+  const res = await fetch(`${BASE}/admin/generate-code`, {
+    method: "POST",
+    headers: adminHeaders(secret),
+  });
+  return json(res);
+}
+
 /** Submits an answer to the current live-interview question; returns feedback + next question (or the final report). */
 export async function submitLiveInterviewAnswer(sessionId, answer) {
   const res = await fetch(`${BASE}/live-interview/answer`, {

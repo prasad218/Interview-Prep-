@@ -7,6 +7,7 @@ import EmptyState from "./components/EmptyState.jsx";
 import InterviewPrep from "./components/InterviewPrep.jsx";
 import LiveInterview from "./components/LiveInterview.jsx";
 import AuthScreen from "./components/AuthScreen.jsx";
+import AdminPanel from "./components/AdminPanel.jsx";
 import PracticeChoice from "./components/PracticeChoice.jsx";
 import QuickPractice from "./components/QuickPractice.jsx";
 import OnboardingWizard from "./components/OnboardingWizard.jsx";
@@ -357,9 +358,16 @@ function MainApp() {
 export default function App() {
   const { user, checkingSession } = useAuth();
   const [entryChoice, setEntryChoice] = useState(null); // null | "quick" | "roadmap"
+  const [showAdmin, setShowAdmin] = useState(false);
+
+  // Admin is a separate, non-candidate view gated by a shared secret (not
+  // the regular login-code/password auth) — see components/AdminPanel.jsx.
+  if (showAdmin) {
+    return <AdminPanel onExit={() => setShowAdmin(false)} />;
+  }
 
   if (checkingSession) return <SplashScreen />;
-  if (!user) return <AuthScreen />;
+  if (!user) return <AuthScreen onAdminLogin={() => setShowAdmin(true)} />;
 
   if (!user.profile) {
     if (entryChoice === "quick") {

@@ -3,6 +3,13 @@ import { nanoid } from "nanoid";
 import { chatCompletion } from "../openrouter.js";
 import { requireAuth } from "../auth.js";
 import * as db from "../db.js";
+import {
+  CREDIT_COST_PER_INTERVIEW,
+  PAID_PACK_CREDITS,
+  PAID_PACK_PRICE_INR,
+  PAID_PACK_USES,
+  PAYMENT_FORM_URL,
+} from "../config/pricing.js";
 
 const router = Router();
 
@@ -13,15 +20,14 @@ const router = Router();
 // feature until they buy another pack. There's no payment gateway wired up
 // (small-scale project, manual PhonePe transfers), so the flow is:
 //   1. App shows this link + price when credits run out.
-//   2. Candidate pays ₹90 via PhonePe and submits the form as proof.
-//   3. You check the form response, then grant credits by calling
-//      POST /api/admin/grant-credits with the ADMIN_SECRET header — see
-//      routes/admin.js.
-const CREDIT_COST_PER_INTERVIEW = 50;
-const PAID_PACK_CREDITS = 200; // 4 more sessions
-const PAID_PACK_PRICE_INR = 90;
-const PAYMENT_FORM_URL =
-  "https://docs.google.com/forms/d/e/1FAIpQLSeXnkzMsXsFTIGe4tGDe5RwpUAO0sKowMgY_GPJ9NFR0vUYlA/viewform";
+//   2. Candidate pays ₹90 via PhonePe.
+//   3. You generate a redemption code (POST /api/admin/generate-code) and
+//      email it to them.
+//   4. They enter their name + that code in the app (POST /api/redeem —
+//      see routes/redeem.js), which grants the credits instantly and
+//      emails you a notification.
+// The constants themselves live in ../config/pricing.js so this file and
+// routes/redeem.js can't drift apart.
 
 // Live interviews are short-lived, stateful conversations — kept in memory
 // per session rather than in db.json (nothing here needs to survive a
@@ -182,7 +188,7 @@ router.post("/start", requireAuth, async (req, res) => {
       paymentLink: PAYMENT_FORM_URL,
       packPrice: PAID_PACK_PRICE_INR,
       packCredits: PAID_PACK_CREDITS,
-      packUses: PAID_PACK_CREDITS / CREDIT_COST_PER_INTERVIEW,
+      packUses: PAID_PACK_USES,
     });
   }
 

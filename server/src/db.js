@@ -18,7 +18,7 @@ async function ensureDb() {
   if (!existsSync(DB_FILE)) {
     await writeFile(
       DB_FILE,
-      JSON.stringify({ conversations: [], users: [] }, null, 2)
+      JSON.stringify({ conversations: [], users: [], redemptionCodes: [] }, null, 2)
     );
   }
 }
@@ -28,6 +28,7 @@ async function ensureDb() {
 function withDefaults(db) {
   if (!Array.isArray(db.conversations)) db.conversations = [];
   if (!Array.isArray(db.users)) db.users = [];
+  if (!Array.isArray(db.redemptionCodes)) db.redemptionCodes = [];
   return db;
 }
 
@@ -171,6 +172,68 @@ export function updateUser(id, patch) {
     Object.assign(user, patch, { updatedAt: new Date().toISOString() });
     await writeDb(db);
     return user;
+  });
+}
+
+// ---------------------------------------------------------- Redemption codes
+//
+// One-time codes the founder generates after manually verifying a PhonePe
+// payment (see routes/admin.js `/generate-code`), then emails to the
+// candidate. The candidate enters the code + their name in the app
+// (routes/redeem.js), which flips `used` to true and credits their account.
+
+export function createRedemptionCode(code) {
+  return withLock(async () => {
+    const db = await readDb();
+    const record = {
+      code,
+      used: false,
+      usedByUserId: null,
+      usedByName: null,
+      usedByLoginCode: null,
+      usedAt: null,
+      createdAt: new Date().toISOString(),
+    };
+    db.redemptionCodes.push(record);
+    await writeDb(db);
+    return record;
+  });
+}
+
+export function findRedemptionCode(code) {
+  return withLock(async () => {
+    const db = await readDb();
+    return db.redemptionCodes.find((r) => r.code === code) || null;
+  });
+}
+
+// All codes (used + unused), most recently created first — for the admin
+// dashboard's "who has redeemed" list.
+export function listRedemptionCodes() {
+  return withLock(async () => {
+    const db = await readDb();
+    return [...db.redemptionCodes].sort(
+      (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+    );
+  });
+}
+
+// Atomically checks-and-marks a code used inside the same lock so two
+// simultaneous requests with the same code can't both succeed.
+export function redeemCode(code, { userId, name, loginCode }) {
+  return withLock(async () => {
+    const db = await readDb();
+    const record = db.redemptionCodes.find((r) => r.code === code);
+    if (!record) return { status: "not_found" };
+    if (record.used) return { status: "already_used", record };
+
+    record.used = true;
+    record.usedByUserId = userId;
+    record.usedByName = name;
+    record.usedByLoginCode = loginCode || null;
+    record.usedAt = new Date().toISOString();
+    await writeDb(db);
+    return { status: "ok", record };
   });
 }
 

@@ -82,6 +82,55 @@ Starts the API on **http://localhost:3001** and the UI on
 Without this, email/password sign-in still works fully — the Google button
 just shows a small "not configured" note instead.
 
+## Live-interview payment flow (₹90 for 4 more sessions)
+
+There's no payment gateway wired up — candidates pay ₹90 via PhonePe outside
+the app. The rest is now self-serve:
+
+1. **Candidate pays** you ₹90 via PhonePe and lets you know (WhatsApp, the
+   proof form, however you currently collect it).
+2. **You verify the payment**, then generate a one-time code:
+   ```bash
+   curl -X POST https://your-api.onrender.com/api/admin/generate-code \
+     -H "x-admin-secret: YOUR_ADMIN_SECRET"
+   ```
+   This returns e.g. `{"code":"PAY-FP43-URXX", "creditsOnRedeem":200, "sessionsOnRedeem":4}`.
+3. **You email that code** to the candidate (any way you like — this repo
+   doesn't send it for you, since you're the one confirming the payment).
+4. **They redeem it** in the app: the paywall screen now has a "Got a code
+   by email?" section where they enter their **name** and the **code**.
+   Credits are granted the instant they submit — no waiting on you.
+5. **You get notified automatically** by email the moment someone redeems,
+   so you have a record of who paid. Configure where that goes:
+   ```
+   # server/.env
+   FOUNDER_EMAIL=sureshksidkidu@gmail.com   # defaults to this if unset
+
+   # Easiest: Gmail with an App Password (not your normal password) —
+   # generate one at https://myaccount.google.com/apppasswords
+   EMAIL_USER=you@gmail.com
+   EMAIL_PASS=your-16-char-app-password
+
+   # OR any other SMTP provider instead of the two lines above:
+   SMTP_HOST=smtp.example.com
+   SMTP_PORT=587
+   SMTP_USER=you@example.com
+   SMTP_PASS=your-smtp-password
+   ```
+   If no email sender is configured, redemptions still work — the
+   notification is just logged to the server console instead of emailed,
+   so a missing env var never blocks a paying candidate from getting their
+   credits.
+
+`ADMIN_SECRET` (used for both `/generate-code` and the older manual
+`/grant-credits` fallback — see `server/src/routes/admin.js`) must be set in
+`server/.env` before these admin routes will respond.
+
+Each redeemed code grants 200 credits = 4 more live-interview sessions
+(50 credits each), after which the feature auto-locks again until the next
+code is redeemed. Codes are single-use — a second redemption attempt with
+the same code is rejected.
+
 ## How the product works
 
 1. **Sign up / sign in** — email+password or Google. Sessions are JWTs

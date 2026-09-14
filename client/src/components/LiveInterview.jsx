@@ -188,6 +188,13 @@ export default function LiveInterview({ models, model, onModelChange }) {
   const [paywall, setPaywall] = useState(null); // set when out of credits
   const [checkingBalance, setCheckingBalance] = useState(false);
 
+  // --- Redeem-code state (paywall) ---
+  const [redeemName, setRedeemName] = useState("");
+  const [redeemCodeInput, setRedeemCodeInput] = useState("");
+  const [redeeming, setRedeeming] = useState(false);
+  const [redeemError, setRedeemError] = useState(null);
+  const [redeemSuccess, setRedeemSuccess] = useState(null);
+
   const credits = user?.liveInterviewCredits ?? 50;
   const usesLeft = Math.max(0, Math.floor(credits / CREDIT_COST_PER_INTERVIEW));
   const locked = credits < CREDIT_COST_PER_INTERVIEW;
@@ -341,6 +348,40 @@ export default function LiveInterview({ models, model, onModelChange }) {
       // Ignore — the paywall just stays up and they can try again.
     } finally {
       setCheckingBalance(false);
+    }
+  };
+
+  const handleRedeem = async (e) => {
+    e.preventDefault();
+    if (redeeming) return;
+    if (!redeemName.trim()) {
+      setRedeemError("Please enter your name.");
+      return;
+    }
+    if (!redeemCodeInput.trim()) {
+      setRedeemError("Please enter the code from your email.");
+      return;
+    }
+    setRedeeming(true);
+    setRedeemError(null);
+    setRedeemSuccess(null);
+    try {
+      const res = await api.redeemCode({
+        code: redeemCodeInput.trim(),
+        name: redeemName.trim(),
+      });
+      setUser((prev) =>
+        prev ? { ...prev, liveInterviewCredits: res.liveInterviewCredits } : prev
+      );
+      setRedeemSuccess(
+        `Unlocked ${res.sessionsUnlocked} more sessions. You're all set!`
+      );
+      setPaywall(null);
+      setRedeemCodeInput("");
+    } catch (e2) {
+      setRedeemError(e2.message);
+    } finally {
+      setRedeeming(false);
     }
   };
 
@@ -507,6 +548,49 @@ export default function LiveInterview({ models, model, onModelChange }) {
               >
                 {checkingBalance ? "Checking…" : "I've paid — check my balance"}
               </button>
+
+              <div className="pt-4 mt-2 border-t border-base-700 text-left space-y-3">
+                <div>
+                  <p className="text-sm font-semibold text-ink-100">
+                    Got a code by email?
+                  </p>
+                  <p className="text-xs text-ink-500 mt-0.5">
+                    Enter your name and the code we sent you to unlock
+                    instantly.
+                  </p>
+                </div>
+                <form onSubmit={handleRedeem} className="space-y-2.5">
+                  <input
+                    type="text"
+                    value={redeemName}
+                    onChange={(e) => setRedeemName(e.target.value)}
+                    placeholder="Your name"
+                    disabled={redeeming}
+                    className="w-full bg-base-800 border border-base-600 rounded-lg px-3 py-2 text-sm text-ink-100 placeholder:text-ink-500 outline-none focus:border-accent disabled:opacity-60"
+                  />
+                  <input
+                    type="text"
+                    value={redeemCodeInput}
+                    onChange={(e) => setRedeemCodeInput(e.target.value.toUpperCase())}
+                    placeholder="Code from your email (e.g. PAY-XXXX-XXXX)"
+                    disabled={redeeming}
+                    className="w-full bg-base-800 border border-base-600 rounded-lg px-3 py-2 text-sm text-ink-100 placeholder:text-ink-500 outline-none focus:border-accent disabled:opacity-60 tracking-wide"
+                  />
+                  {redeemError && (
+                    <p className="text-xs text-signal-rose">{redeemError}</p>
+                  )}
+                  {redeemSuccess && (
+                    <p className="text-xs text-signal-teal">{redeemSuccess}</p>
+                  )}
+                  <button
+                    type="submit"
+                    disabled={redeeming}
+                    className="w-full rounded-xl border border-accent/40 text-accent-soft hover:bg-brand-gradient-soft transition-colors px-4 py-2 text-sm font-semibold disabled:opacity-50"
+                  >
+                    {redeeming ? "Redeeming…" : "Redeem code"}
+                  </button>
+                </form>
+              </div>
             </div>
           </div>
         </div>

@@ -74,7 +74,7 @@ function SavedCodeScreen({ code, onContinue }) {
   );
 }
 
-export default function AuthScreen() {
+export default function AuthScreen({ onAdminLogin }) {
   const { login, setUser } = useAuth();
   const [mode, setMode] = useState("login"); // "login" | "signup"
   const [loginCode, setLoginCode] = useState("");
@@ -270,6 +270,15 @@ export default function AuthScreen() {
             issued here reflect practice performance and aren't official
             credentials from any company.
           </p>
+
+          {onAdminLogin && (
+            <button
+              onClick={onAdminLogin}
+              className="w-full text-center text-xs text-ink-500 hover:text-ink-100 transition-colors mt-4"
+            >
+              Admin login →
+            </button>
+          )}
         </div>
       </div>
     </div>
