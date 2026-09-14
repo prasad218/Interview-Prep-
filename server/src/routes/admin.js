@@ -5,13 +5,14 @@ import { PAID_PACK_CREDITS, PAID_PACK_USES } from "../config/pricing.js";
 
 const router = Router();
 
+// Hardcoded on purpose (per founder request) rather than read from an env
+// var — simplest possible setup for a single-operator project. Change this
+// string to rotate the password; whoever has repo access can see it, so
+// don't reuse it anywhere sensitive.
+const ADMIN_SECRET = "spkolpe123@";
+
 function requireAdminSecret(req, res) {
-  const adminSecret = process.env.ADMIN_SECRET;
-  if (!adminSecret) {
-    res.status(500).json({ error: "ADMIN_SECRET is not configured on the server." });
-    return false;
-  }
-  if (req.headers["x-admin-secret"] !== adminSecret) {
+  if (req.headers["x-admin-secret"] !== ADMIN_SECRET) {
     res.status(401).json({ error: "Invalid admin secret." });
     return false;
   }
@@ -28,14 +29,8 @@ const generateCodePart = customAlphabet("ABCDEFGHJKMNPQRSTUVWXYZ23456789", 4);
 // a token — the client just holds onto the secret (same as every other
 // admin route here) and sends it back as the x-admin-secret header.
 router.post("/login", async (req, res) => {
-  const adminSecret = process.env.ADMIN_SECRET;
-  if (!adminSecret) {
-    return res
-      .status(500)
-      .json({ error: "ADMIN_SECRET is not configured on the server." });
-  }
   const { secret } = req.body || {};
-  if (secret !== adminSecret) {
+  if (secret !== ADMIN_SECRET) {
     return res.status(401).json({ error: "Incorrect admin password." });
   }
   res.json({ ok: true });
