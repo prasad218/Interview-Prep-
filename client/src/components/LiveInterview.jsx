@@ -186,7 +186,6 @@ export default function LiveInterview({ models, model, onModelChange }) {
   const { user, setUser, refreshUser } = useAuth();
   const [phase, setPhase] = useState("setup"); // "setup" | "live" | "report"
   const [paywall, setPaywall] = useState(null); // set when out of credits
-  const [checkingBalance, setCheckingBalance] = useState(false);
 
   // --- Redeem-code state (paywall) ---
   const [redeemName, setRedeemName] = useState("");
@@ -335,20 +334,6 @@ export default function LiveInterview({ models, model, onModelChange }) {
     setElapsed(0);
     setReport(null);
     setError(null);
-  };
-
-  const handleCheckBalance = async () => {
-    setCheckingBalance(true);
-    try {
-      const updated = await refreshUser();
-      if ((updated?.liveInterviewCredits ?? 0) >= CREDIT_COST_PER_INTERVIEW) {
-        setPaywall(null);
-      }
-    } catch {
-      // Ignore — the paywall just stays up and they can try again.
-    } finally {
-      setCheckingBalance(false);
-    }
   };
 
   const handleRedeem = async (e) => {
@@ -536,18 +521,9 @@ export default function LiveInterview({ models, model, onModelChange }) {
               </a>
 
               <p className="text-xs text-ink-500 leading-relaxed">
-                Pay via the PhonePe details on that page, then submit the
-                form as proof. Credits are added manually after payment is
-                verified — this can take a little while, not instant.
+                Pay via the PhonePe details on that page, then check your
+                email — we'll send you a code to unlock instantly.
               </p>
-
-              <button
-                onClick={handleCheckBalance}
-                disabled={checkingBalance}
-                className="text-xs font-medium text-ink-300 hover:text-ink-100 underline underline-offset-2 disabled:opacity-50"
-              >
-                {checkingBalance ? "Checking…" : "I've paid — check my balance"}
-              </button>
 
               <div className="pt-4 mt-2 border-t border-base-700 text-left space-y-3">
                 <div>
