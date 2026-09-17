@@ -30,7 +30,7 @@ router.post("/", async (req, res) => {
   const convo = {
     id: nanoid(),
     title: "New chat",
-    model: model || process.env.DEFAULT_MODEL || "openai/gpt-4o-mini",
+    model: model || process.env.DEFAULT_MODEL || "openrouter/free",
     messages: [],
     createdAt: now,
     updatedAt: now,

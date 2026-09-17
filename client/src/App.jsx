@@ -73,8 +73,8 @@ function MainApp() {
   const [conversations, setConversations] = useState([]);
   const [activeId, setActiveId] = useState(null);
   const [messages, setMessages] = useState([]);
-  const [model, setModel] = useState("openai/gpt-4o-mini");
-  const [models, setModels] = useState([{ id: "openai/gpt-4o-mini", name: "GPT-4o mini" }]);
+  const [model, setModel] = useState("openrouter/free");
+  const [models, setModels] = useState([{ id: "openrouter/free", name: "Free (auto-routed)" }]);
   const [streamingText, setStreamingText] = useState(null);
   const [streamingModel, setStreamingModel] = useState(null);
   const [error, setError] = useState(null);

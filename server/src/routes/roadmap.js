@@ -88,7 +88,7 @@ router.post("/generate", requireAuth, async (req, res) => {
       { role: "user", content: buildPrompt(user.profile) },
     ];
     const model =
-      req.body?.model || process.env.DEFAULT_MODEL || "openai/gpt-4o-mini";
+      req.body?.model || process.env.DEFAULT_MODEL || "openrouter/free";
     const raw = await chatCompletion({
       model,
       messages,
