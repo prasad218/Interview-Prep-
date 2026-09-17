@@ -290,7 +290,7 @@ function MainApp() {
           models={models}
           model={model}
           onModelChange={setModel}
-          showModelSelector={view === "chat"}
+          showModelSelector={false}
           view={view}
           onViewChange={setView}
         />
