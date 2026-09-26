@@ -286,7 +286,7 @@ function AdminDashboard({ secret, onLogout }) {
         <div className="max-w-4xl mx-auto px-3 sm:px-4 h-14 sm:h-16 flex items-center justify-between gap-3">
           <div className="flex items-center gap-2.5 min-w-0">
             <div className="w-8 h-8 rounded-lg overflow-hidden shrink-0 ring-1 ring-base-600">
-              <img src={logo} alt="Interview Prep" className="w-full h-full object-contain" />
+              <img src={logo} alt="LevelUp" className="w-full h-full object-contain" />
             </div>
             <div className="min-w-0">
               <h1 className="font-display font-bold text-sm sm:text-base leading-tight truncate">

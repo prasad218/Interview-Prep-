@@ -18,7 +18,7 @@ export default function PracticeChoice({ onQuickPractice, onBuildRoadmap }) {
 
       <div className="relative z-10 flex flex-col items-center max-w-md w-full">
         <div className="w-14 h-14 rounded-2xl overflow-hidden shadow-glow mb-5 animate-floatSlow">
-          <img src={logo} alt="Interview Prep" className="w-full h-full object-contain" />
+          <img src={logo} alt="LevelUp" className="w-full h-full object-contain" />
         </div>
 
         <h1 className="font-display text-2xl font-bold text-ink-100 mb-2">

@@ -21,7 +21,7 @@ function SplashScreen() {
   return (
     <div className="h-screen w-screen flex items-center justify-center bg-base-950 bg-aurora">
       <div className="w-14 h-14 rounded-2xl overflow-hidden shadow-glow animate-floatSlow">
-        <img src={logo} alt="Interview Prep" className="w-full h-full object-contain" />
+        <img src={logo} alt="LevelUp" className="w-full h-full object-contain" />
       </div>
     </div>
   );
@@ -283,7 +283,7 @@ function MainApp() {
       <div className="flex-1 flex flex-col min-w-0">
         <Header
           title={
-            titleByView[view] || activeConversation?.title || "Interview Prep"
+            titleByView[view] || activeConversation?.title || "LevelUp"
           }
           sidebarOpen={sidebarOpen}
           onToggleSidebar={() => setSidebarOpen((v) => !v)}

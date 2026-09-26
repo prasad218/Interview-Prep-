@@ -126,9 +126,9 @@ export default function AuthScreen({ onAdminLogin }) {
         <div>
           <div className="flex items-center gap-2.5">
             <div className="w-9 h-9 rounded-xl overflow-hidden shrink-0">
-              <img src={logo} alt="Interview Prep" className="w-full h-full object-contain" />
+              <img src={logo} alt="LevelUp" className="w-full h-full object-contain" />
             </div>
-            <span className="font-display font-bold text-lg">Interview Prep</span>
+            <span className="font-display font-bold text-lg">LevelUp</span>
           </div>
 
           <h1 className="font-display font-extrabold text-4xl xl:text-5xl leading-tight mt-14 max-w-lg">
@@ -168,9 +168,9 @@ export default function AuthScreen({ onAdminLogin }) {
         <div className="w-full max-w-sm">
           <div className="lg:hidden flex items-center gap-2.5 justify-center mb-8">
             <div className="w-8 h-8 rounded-xl overflow-hidden shrink-0">
-              <img src={logo} alt="Interview Prep" className="w-full h-full object-contain" />
+              <img src={logo} alt="LevelUp" className="w-full h-full object-contain" />
             </div>
-            <span className="font-display font-bold text-lg">Interview Prep</span>
+            <span className="font-display font-bold text-lg">LevelUp</span>
           </div>
 
           <div className="flex items-center bg-base-800 border border-base-600 rounded-xl p-1 mb-6 text-sm">

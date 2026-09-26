@@ -29,7 +29,7 @@ export default function QuickPractice({ onBuildRoadmap, onBack }) {
             </button>
           )}
           <div className="w-8 h-8 rounded-lg overflow-hidden shrink-0">
-            <img src={logo} alt="Interview Prep" className="w-full h-full object-contain" />
+            <img src={logo} alt="LevelUp" className="w-full h-full object-contain" />
           </div>
           <span className="font-display font-semibold text-ink-100 text-sm truncate">
             Quick practice

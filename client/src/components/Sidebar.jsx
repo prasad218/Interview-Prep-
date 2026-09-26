@@ -57,11 +57,11 @@ export default function Sidebar({
         <div className="w-72 flex flex-col h-full">
           <div className="flex items-center gap-2.5 px-4 pt-4 pb-1">
             <div className="w-8 h-8 rounded-xl overflow-hidden shrink-0">
-              <img src={logo} alt="Interview Prep" className="w-full h-full object-contain" />
+              <img src={logo} alt="LevelUp" className="w-full h-full object-contain" />
             </div>
             <div className="min-w-0 flex-1">
               <p className="font-display font-bold text-sm text-ink-100 leading-tight truncate">
-                Interview Prep
+                LevelUp
               </p>
               <p className="text-[10px] text-ink-500 leading-tight truncate">
                 by <span className="text-gradient-brand font-semibold">Aakara.AI</span>

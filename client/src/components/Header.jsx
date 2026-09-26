@@ -30,7 +30,7 @@ export default function Header({
           ☰
         </button>
         <h2 className="font-display font-semibold text-sm text-ink-100 truncate">
-          {title || "Interview Prep"}
+          {title || "LevelUp"}
         </h2>
       </div>
 

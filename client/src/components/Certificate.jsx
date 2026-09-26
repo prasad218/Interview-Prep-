@@ -19,7 +19,7 @@ async function downloadCertificatePdf(certificate) {
   doc.setFont("helvetica", "bold");
   doc.setFontSize(12);
   doc.setTextColor(124, 92, 255);
-  doc.text("INTERVIEW PREP", centerX, 90, { align: "center" });
+  doc.text("LEVELUP", centerX, 90, { align: "center" });
 
   doc.setFont("helvetica", "normal");
   doc.setFontSize(11);
@@ -62,18 +62,18 @@ async function downloadCertificatePdf(certificate) {
   doc.setTextColor(150, 148, 160);
   const disclaimer =
     certificate.mode === "company" && certificate.company
-      ? `Issued by Interview Prep (Aakara.AI) based on independent practice-test performance. ` +
+      ? `Issued by LevelUp (Aakara.AI) based on independent practice-test performance. ` +
         `Not issued, endorsed by, or affiliated with ${certificate.company}.`
-      : `Issued by Interview Prep (Aakara.AI) based on independent practice-test performance.`;
+      : `Issued by LevelUp (Aakara.AI) based on independent practice-test performance.`;
   const lines = doc.splitTextToSize(disclaimer, pageWidth - 160);
   doc.text(lines, centerX, pageHeight - 60, { align: "center" });
 
   doc.setFont("helvetica", "bold");
   doc.setFontSize(10);
   doc.setTextColor(124, 92, 255);
-  doc.text("Interview Prep · Aakara.AI", centerX, pageHeight - 40, { align: "center" });
+  doc.text("LevelUp · Aakara.AI", centerX, pageHeight - 40, { align: "center" });
 
-  doc.save(`interview-prep-certificate-${certificate.id}.pdf`);
+  doc.save(`levelup-certificate-${certificate.id}.pdf`);
 }
 
 export default function Certificate({ certificate }) {
@@ -97,7 +97,7 @@ export default function Certificate({ certificate }) {
     <div className="rounded-2xl border-2 border-accent/40 bg-aurora p-6 sm:p-8 text-center relative overflow-hidden">
       <div className="absolute top-3 right-3 text-3xl">🏅</div>
       <p className="text-[11px] font-semibold tracking-widest text-accent-soft uppercase">
-        Interview Prep
+        LevelUp
       </p>
       <p className="text-xs text-ink-500 mb-4">Certificate of Readiness</p>
       <h2 className="font-display font-bold text-2xl sm:text-3xl text-ink-100">
@@ -121,8 +121,8 @@ export default function Certificate({ certificate }) {
 
       <p className="text-[10px] text-ink-500 mt-4 max-w-md mx-auto leading-relaxed">
         {certificate.mode === "company" && certificate.company
-          ? `Issued by Interview Prep (Aakara.AI) based on independent practice-test performance. Not issued, endorsed by, or affiliated with ${certificate.company}.`
-          : "Issued by Interview Prep (Aakara.AI) based on independent practice-test performance."}
+          ? `Issued by LevelUp (Aakara.AI) based on independent practice-test performance. Not issued, endorsed by, or affiliated with ${certificate.company}.`
+          : "Issued by LevelUp (Aakara.AI) based on independent practice-test performance."}
       </p>
     </div>
   );
