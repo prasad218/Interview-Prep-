@@ -1,6 +1,5 @@
 import { useState } from "react";
 import * as api from "../api/client.js";
-import ModelSelector from "./ModelSelector.jsx";
 import ResumeSetupForm, { INTERVIEW_CATEGORIES } from "./ResumeSetupForm.jsx";
 
 const DIFFICULTY_STYLE = {
@@ -152,10 +151,7 @@ export default function InterviewPrep({ models, model, onModelChange, onGoLive }
             setError={setError}
           />
 
-          <div className="flex items-center justify-between pt-1">
-            {models && (
-              <ModelSelector models={models} value={model} onChange={onModelChange} />
-            )}
+          <div className="flex items-center justify-end pt-1">
             <button
               onClick={handleGenerate}
               disabled={loading}

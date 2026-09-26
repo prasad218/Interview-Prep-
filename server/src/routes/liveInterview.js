@@ -205,7 +205,7 @@ router.post("/start", requireAuth, async (req, res) => {
     return res.status(400).json({ error: "resumeText is required." });
   }
 
-  const useModel = model || process.env.DEFAULT_MODEL || "openai/gpt-4o-mini";
+  const useModel = model || process.env.DEFAULT_MODEL || "openrouter/free";
   const clampedCount = Math.max(3, Math.min(15, Number(numQuestions) || 8));
   const areas = focusAreas.length ? focusAreas : CATEGORY_LIST;
 

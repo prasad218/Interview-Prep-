@@ -6,9 +6,9 @@ import logo from "../assets/logo.png";
 
 export default function QuickPractice({ onBuildRoadmap, onBack }) {
   const [mode, setMode] = useState("interview"); // "interview" | "live"
-  const [model, setModel] = useState("openai/gpt-4o-mini");
+  const [model, setModel] = useState("openrouter/free");
   const [models, setModels] = useState([
-    { id: "openai/gpt-4o-mini", name: "GPT-4o mini" },
+    { id: "openrouter/free", name: "Free (auto-routed)" },
   ]);
 
   useEffect(() => {

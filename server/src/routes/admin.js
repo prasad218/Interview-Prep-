@@ -5,11 +5,18 @@ import { PAID_PACK_CREDITS, PAID_PACK_USES } from "../config/pricing.js";
 
 const router = Router();
 
-// Hardcoded on purpose (per founder request) rather than read from an env
-// var — simplest possible setup for a single-operator project. Change this
-// string to rotate the password; whoever has repo access can see it, so
-// don't reuse it anywhere sensitive.
-const ADMIN_SECRET = "spkolpe123@";
+// Read from server/.env — NEVER hardcode this here. This file is committed
+// to the repo, so any string literal here is visible to anyone with repo
+// access (or anyone who finds the repo, if it's public). Set ADMIN_SECRET
+// in server/.env (see server/.env.example) and restart the server after
+// changing it to rotate the password.
+const ADMIN_SECRET = process.env.ADMIN_SECRET;
+
+if (!ADMIN_SECRET) {
+  console.warn(
+    "⚠️  ADMIN_SECRET is not set in server/.env — the admin dashboard will reject every login until it is."
+  );
+}
 
 function requireAdminSecret(req, res) {
   if (req.headers["x-admin-secret"] !== ADMIN_SECRET) {

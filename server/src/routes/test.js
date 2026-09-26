@@ -74,7 +74,7 @@ router.post("/start", requireAuth, async (req, res) => {
           `"explanation": string (1-2 sentences)}, ... 8 items total, ids q1..q8]}`,
       },
     ];
-    const model = process.env.DEFAULT_MODEL || "openai/gpt-4o-mini";
+    const model = process.env.DEFAULT_MODEL || "openrouter/free";
     const raw = await chatCompletion({ model, messages, temperature: 0.7, jsonMode: true });
     const parsed = safeParseJSON(raw);
     const questions = Array.isArray(parsed.questions) ? parsed.questions : [];

@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import * as api from "../api/client.js";
-import ModelSelector from "./ModelSelector.jsx";
 import ResumeSetupForm, { INTERVIEW_CATEGORIES } from "./ResumeSetupForm.jsx";
 import { useAuth } from "../context/AuthContext.jsx";
 import { setToken } from "../api/authToken.js";
@@ -614,10 +613,7 @@ export default function LiveInterview({ models, model, onModelChange }) {
               setError={setError}
             />
 
-            <div className="flex items-center justify-between pt-1">
-              {models && (
-                <ModelSelector models={models} value={model} onChange={onModelChange} />
-              )}
+            <div className="flex items-center justify-end pt-1">
               <button
                 onClick={handleStart}
                 disabled={starting}
