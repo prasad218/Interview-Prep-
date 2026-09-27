@@ -128,11 +128,14 @@ export default function AuthScreen({ onAdminLogin }) {
             <div className="w-9 h-9 rounded-xl overflow-hidden shrink-0">
               <img src={logo} alt="LevelUp" className="w-full h-full object-contain" />
             </div>
-            <span className="font-display font-bold text-lg">LevelUp</span>
+            <span className="font-display font-bold text-lg"><span className="text-ink-100">Level</span><span className="text-gradient-brand">Up</span></span>
           </div>
 
-          <h1 className="font-display font-extrabold text-4xl xl:text-5xl leading-tight mt-14 max-w-lg">
-            LevelUp. <span className="text-gradient-brand">Make your move.</span>
+          <h1 className="font-display font-extrabold text-4xl xl:text-5xl leading-tight mt-14 max-w-lg text-ink-100">
+            <span className="text-ink-100">Level</span>
+            <span className="text-gradient-brand">Up</span>
+            <span className="text-ink-500 font-semibold"> — </span>
+            Make your move.
           </h1>
           <p className="text-ink-300 text-base mt-4 max-w-md leading-relaxed">
             One resume upload turns into a personalized roadmap, live AI mock
@@ -169,7 +172,7 @@ export default function AuthScreen({ onAdminLogin }) {
             <div className="w-8 h-8 rounded-xl overflow-hidden shrink-0">
               <img src={logo} alt="LevelUp" className="w-full h-full object-contain" />
             </div>
-            <span className="font-display font-bold text-lg">LevelUp</span>
+            <span className="font-display font-bold text-lg"><span className="text-ink-100">Level</span><span className="text-gradient-brand">Up</span></span>
           </div>
 
           <div className="flex items-center bg-base-800 border border-base-600 rounded-xl p-1 mb-6 text-sm">

@@ -60,8 +60,9 @@ export default function Sidebar({
               <img src={logo} alt="LevelUp" className="w-full h-full object-contain" />
             </div>
             <div className="min-w-0 flex-1">
-              <p className="font-display font-bold text-sm text-ink-100 leading-tight truncate">
-                LevelUp
+              <p className="font-display font-bold text-sm leading-tight truncate">
+                <span className="text-ink-100">Level</span>
+                <span className="text-gradient-brand">Up</span>
               </p>
               <p className="text-[10px] text-ink-500 leading-tight truncate">
                 by <span className="text-gradient-brand font-semibold">Aakara.AI</span>
