@@ -132,8 +132,7 @@ export default function AuthScreen({ onAdminLogin }) {
           </div>
 
           <h1 className="font-display font-extrabold text-4xl xl:text-5xl leading-tight mt-14 max-w-lg">
-            From <span className="text-gradient-brand">preparation</span> to
-            get hired.
+            LevelUp. <span className="text-gradient-brand">Make your move.</span>
           </h1>
           <p className="text-ink-300 text-base mt-4 max-w-md leading-relaxed">
             One resume upload turns into a personalized roadmap, live AI mock
