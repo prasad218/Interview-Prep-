@@ -1,4 +1,5 @@
 import { useCallback, useRef, useState } from "react";
+import { Check } from "lucide-react";
 import * as api from "../api/client.js";
 
 export const INTERVIEW_CATEGORIES = [
@@ -97,7 +98,7 @@ export default function ResumeSetupForm({
           <p className="text-sm text-ink-300">Reading resume…</p>
         ) : fileName ? (
           <p className="text-sm text-ink-100">
-            ✓ {fileName} <span className="text-ink-500">— click to replace</span>
+            <Check className="inline w-3.5 h-3.5 -mt-0.5 mr-1" strokeWidth={2.5} />{fileName} <span className="text-ink-500">— click to replace</span>
           </p>
         ) : (
           <p className="text-sm text-ink-300">

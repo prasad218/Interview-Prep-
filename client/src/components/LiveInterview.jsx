@@ -3,6 +3,7 @@ import * as api from "../api/client.js";
 import ResumeSetupForm, { INTERVIEW_CATEGORIES } from "./ResumeSetupForm.jsx";
 import { useAuth } from "../context/AuthContext.jsx";
 import { setToken } from "../api/authToken.js";
+import { Lock, ArrowRight, Volume2, VolumeX, Video, VideoOff, Mic, Lightbulb } from "lucide-react";
 
 const CREDIT_COST_PER_INTERVIEW = 50;
 
@@ -497,8 +498,8 @@ export default function LiveInterview({ models, model, onModelChange }) {
         <div className="flex-1 overflow-y-auto">
           <div className="max-w-lg mx-auto px-4 py-10">
             <div className="rounded-2xl border border-base-600 bg-base-900 shadow-card p-6 text-center space-y-4">
-              <div className="w-12 h-12 mx-auto rounded-2xl bg-signal-amber/15 border border-signal-amber/30 flex items-center justify-center text-xl">
-                🔒
+              <div className="w-12 h-12 mx-auto rounded-2xl bg-signal-amber/15 border border-signal-amber/30 flex items-center justify-center">
+                <Lock className="w-5 h-5 text-signal-amber" strokeWidth={2.25} />
               </div>
               <div>
                 <h1 className="font-display font-bold text-lg text-ink-100">
@@ -516,7 +517,7 @@ export default function LiveInterview({ models, model, onModelChange }) {
                 rel="noopener noreferrer"
                 className="inline-flex items-center justify-center gap-2 w-full rounded-xl bg-brand-gradient hover:opacity-90 shadow-glow-sm transition-opacity px-5 py-2.5 text-sm font-semibold text-white"
               >
-                Pay ₹{packPrice} to unlock {packUses} sessions →
+                Pay ₹{packPrice} to unlock {packUses} sessions <ArrowRight className="w-4 h-4" strokeWidth={2.25} />
               </a>
 
               <p className="text-xs text-ink-500 leading-relaxed">
@@ -894,7 +895,7 @@ export default function LiveInterview({ models, model, onModelChange }) {
                   title={speakerOn ? "Replay question" : "Speaker muted"}
                   className="shrink-0 text-ink-500 hover:text-ink-100 transition-colors"
                 >
-                  {speakerOn ? "🔊" : "🔇"}
+                  {speakerOn ? <Volume2 className="w-[18px] h-[18px]" strokeWidth={2} /> : <VolumeX className="w-[18px] h-[18px]" strokeWidth={2} />}
                 </button>
               </div>
             </div>
@@ -902,34 +903,37 @@ export default function LiveInterview({ models, model, onModelChange }) {
             <div className="border-t border-base-700 px-5 py-3 flex flex-wrap items-center gap-2">
               <button
                 onClick={() => setCameraOn((v) => !v)}
-                className={`text-xs px-3 py-1.5 rounded-lg border transition-colors ${
+                className={`flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border transition-colors ${
                   cameraOn
                     ? "border-base-600 text-ink-300 hover:border-accent-dim"
                     : "border-signal-rose/40 text-signal-rose"
                 }`}
               >
-                {cameraOn ? "📷 Camera On" : "📷 Camera Off"}
+                {cameraOn ? <Video className="w-3.5 h-3.5" strokeWidth={2} /> : <VideoOff className="w-3.5 h-3.5" strokeWidth={2} />}
+                {cameraOn ? "Camera on" : "Camera off"}
               </button>
               <button
                 onClick={() => setSpeakerOn((v) => !v)}
-                className={`text-xs px-3 py-1.5 rounded-lg border transition-colors ${
+                className={`flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border transition-colors ${
                   speakerOn
                     ? "border-base-600 text-ink-300 hover:border-accent-dim"
                     : "border-signal-rose/40 text-signal-rose"
                 }`}
               >
-                {speakerOn ? "🔊 Voice On" : "🔇 Voice Off"}
+                {speakerOn ? <Volume2 className="w-3.5 h-3.5" strokeWidth={2} /> : <VolumeX className="w-3.5 h-3.5" strokeWidth={2} />}
+                {speakerOn ? "Voice on" : "Voice off"}
               </button>
               {SpeechRecognitionCtor && (
                 <button
                   onClick={toggleListening}
-                  className={`text-xs px-3 py-1.5 rounded-lg border transition-colors ${
+                  className={`flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border transition-colors ${
                     listening
                       ? "border-accent bg-brand-gradient-soft text-accent-soft"
                       : "border-base-600 text-ink-300 hover:border-accent-dim"
                   }`}
                 >
-                  {listening ? "🎙️ Listening…" : "🎙️ Speak Answer"}
+                  <Mic className={`w-3.5 h-3.5 ${listening ? "animate-pulse" : ""}`} strokeWidth={2} />
+                  {listening ? "Listening…" : "Speak answer"}
                 </button>
               )}
               {cameraError && (
@@ -1055,7 +1059,7 @@ export default function LiveInterview({ models, model, onModelChange }) {
           </div>
 
           <div className="rounded-2xl border border-accent/30 bg-brand-gradient-soft p-4">
-            <p className="text-xs font-medium text-accent-soft mb-1">💡 Tip</p>
+            <p className="flex items-center gap-1.5 text-xs font-medium text-accent-soft mb-1"><Lightbulb className="w-3.5 h-3.5" strokeWidth={2} /> Tip</p>
             <p className="text-xs text-ink-300 leading-relaxed">
               Be specific and explain with examples from your real projects —
               the interviewer adapts its follow-ups to what you say.

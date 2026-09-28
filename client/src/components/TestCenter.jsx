@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import * as api from "../api/client.js";
 import Certificate from "./Certificate.jsx";
+import { ArrowRight, PartyPopper } from "lucide-react";
 
 export default function TestCenter({ user, preselectedCompany, onConsumePreselect }) {
   const [stage, setStage] = useState("select"); // "select" | "quiz" | "result"
@@ -133,9 +134,9 @@ export default function TestCenter({ user, preselectedCompany, onConsumePreselec
             <button
               onClick={startTest}
               disabled={loading || (mode === "company" && !company)}
-              className="w-full rounded-xl bg-brand-gradient hover:opacity-90 shadow-glow-sm disabled:opacity-50 transition-opacity px-4 py-2.5 text-sm font-semibold text-white"
+              className="w-full flex items-center justify-center gap-2 rounded-xl bg-brand-gradient hover:opacity-90 shadow-glow-sm disabled:opacity-50 transition-opacity px-4 py-2.5 text-sm font-semibold text-white"
             >
-              {loading ? "Preparing questions…" : "Start test →"}
+              {loading ? "Preparing questions…" : <>Start test <ArrowRight className="w-4 h-4" strokeWidth={2.25} /></>}
             </button>
             <p className="text-[11px] text-ink-500 text-center">
               8 multiple-choice questions · pass at 70% or higher
@@ -254,7 +255,7 @@ export default function TestCenter({ user, preselectedCompany, onConsumePreselec
             </div>
             <div>
               <p className="font-display font-semibold text-sm text-ink-100">
-                {result.passed ? "You passed! 🎉" : "Not quite there yet"}
+                {result.passed ? (<span className="inline-flex items-center gap-1.5">You passed! <PartyPopper className="w-4 h-4 text-accent-soft" strokeWidth={2} /></span>) : "Not quite there yet"}
               </p>
               <p className="text-xs text-ink-500 mt-1">
                 {result.passed

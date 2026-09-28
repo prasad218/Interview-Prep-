@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { ArrowLeft, ArrowRight } from "lucide-react";
 import * as api from "../api/client.js";
 import InterviewPrep from "./InterviewPrep.jsx";
 import LiveInterview from "./LiveInterview.jsx";  
@@ -25,7 +26,7 @@ export default function QuickPractice({ onBuildRoadmap, onBack }) {
               title="Back"
               className="shrink-0 w-8 h-8 flex items-center justify-center rounded-lg text-ink-400 hover:text-ink-100 hover:bg-base-800 transition-colors"
             >
-              ←
+              <ArrowLeft className="w-[18px] h-[18px]" strokeWidth={2} />
             </button>
           )}
           <div className="w-8 h-8 rounded-lg overflow-hidden shrink-0">
@@ -62,9 +63,9 @@ export default function QuickPractice({ onBuildRoadmap, onBack }) {
 
           <button
             onClick={onBuildRoadmap}
-            className="rounded-lg border border-base-600 hover:border-brand-500/40 hover:bg-base-800 transition-colors text-ink-300 text-xs font-medium px-3 py-1.5"
+            className="flex items-center gap-1.5 rounded-lg border border-base-600 hover:border-brand-500/40 hover:bg-base-800 transition-colors text-ink-300 text-xs font-medium px-3 py-1.5"
           >
-            Build my roadmap →
+            Build my roadmap <ArrowRight className="w-3.5 h-3.5" strokeWidth={2} />
           </button>
         </div>
       </header>

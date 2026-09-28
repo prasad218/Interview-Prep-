@@ -1,4 +1,5 @@
 import { useCallback, useRef, useState } from "react";
+import { X, Map, ArrowLeft, ArrowRight, Check } from "lucide-react";
 import * as api from "../api/client.js";
 import { useAuth } from "../context/AuthContext.jsx";
 
@@ -30,7 +31,7 @@ function CompanyChips({ companies, setCompanies }) {
               className="hover:text-white"
               aria-label={`Remove ${c}`}
             >
-              ✕
+              <X className="w-3 h-3" strokeWidth={2.5} />
             </button>
           </span>
         ))}
@@ -132,7 +133,7 @@ export default function OnboardingWizard({ onDone, initialProfile, onCancel }) {
       <div className="min-h-screen flex items-center justify-center bg-base-950 bg-aurora p-6">
         <div className="text-center max-w-sm">
           <div className="w-14 h-14 rounded-2xl bg-brand-gradient shadow-glow mx-auto mb-6 flex items-center justify-center animate-floatSlow">
-            <span className="text-white text-2xl">🗺️</span>
+            <Map className="w-6 h-6 text-white" strokeWidth={2.25} />
           </div>
           <h2 className="font-display font-bold text-lg mb-2">
             Building your roadmap…
@@ -154,9 +155,9 @@ export default function OnboardingWizard({ onDone, initialProfile, onCancel }) {
           {onCancel && (
             <button
               onClick={onCancel}
-              className="absolute left-0 top-1 text-xs text-ink-500 hover:text-ink-100"
+              className="absolute left-0 top-1 flex items-center gap-1 text-xs text-ink-500 hover:text-ink-100"
             >
-              ← Back
+              <ArrowLeft className="w-3.5 h-3.5" strokeWidth={2} /> Back
             </button>
           )}
           <h1 className="font-display font-bold text-2xl">
@@ -205,7 +206,7 @@ export default function OnboardingWizard({ onDone, initialProfile, onCancel }) {
                 <p className="text-sm text-ink-300">Reading resume…</p>
               ) : fileName ? (
                 <p className="text-sm text-ink-100">
-                  ✓ {fileName} <span className="text-ink-500">— click to replace</span>
+                  <Check className="inline w-3.5 h-3.5 -mt-0.5 mr-1" strokeWidth={2.5} />{fileName} <span className="text-ink-500">— click to replace</span>
                 </p>
               ) : (
                 <p className="text-sm text-ink-300">
@@ -285,9 +286,9 @@ export default function OnboardingWizard({ onDone, initialProfile, onCancel }) {
 
           <button
             type="submit"
-            className="w-full rounded-xl bg-brand-gradient hover:opacity-90 shadow-glow-sm transition-opacity px-4 py-3 text-sm font-semibold text-white"
+            className="w-full flex items-center justify-center gap-2 rounded-xl bg-brand-gradient hover:opacity-90 shadow-glow-sm transition-opacity px-4 py-3 text-sm font-semibold text-white"
           >
-            {initialProfile ? "Save & regenerate roadmap →" : "Generate my roadmap →"}
+            {initialProfile ? "Save & regenerate roadmap" : "Generate my roadmap"} <ArrowRight className="w-4 h-4" strokeWidth={2.25} />
           </button>
         </form>
       </div>
