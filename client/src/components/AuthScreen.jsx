@@ -3,30 +3,100 @@ import { useAuth } from "../context/AuthContext.jsx";
 import * as api from "../api/client.js";
 import { setToken } from "../api/authToken.js";
 import logo from "../assets/logo.png";
-import { Map, Mic, Building2, Award, KeyRound } from "lucide-react";
+import ProgressRing from "./ProgressRing.jsx";
+import { Map, Mic, Building2, Award, KeyRound, Check } from "lucide-react";
 
 const FEATURES = [
   {
     icon: Map,
     title: "Personalized roadmap",
+    short: "Day-by-day plan from your resume",
     body: "Upload your resume once — get a day-by-day plan built around your timeline and daily study hours.",
   },
   {
     icon: Mic,
     title: "Live mock interviews",
+    short: "An AI interviewer that asks follow-ups",
     body: "Practice with an AI interviewer that asks follow-ups based on your actual answers, not a script.",
   },
   {
     icon: Building2,
     title: "Company-specific prep",
+    short: "Rounds and tests for your targets",
     body: "Tell us which companies you're targeting — get their typical rounds and tailored tests.",
   },
   {
     icon: Award,
     title: "Certificates that prove it",
+    short: "Earn one when you pass a test",
     body: "Clear a readiness test and download a certificate + badge to show your preparation.",
   },
 ];
+
+/** Static illustration of the real product, shown beside the sign-in form. */
+function ProductPreview() {
+  const rows = [
+    { range: "Days 1–7", label: "Data structures", state: "done" },
+    { range: "Days 8–14", label: "System design basics", state: "current" },
+    { range: "Days 15–21", label: "Mock interviews", state: "next" },
+  ];
+  return (
+    <div aria-hidden="true" className="relative w-full max-w-md h-[310px] select-none">
+      <div className="absolute left-0 top-0 w-[88%] rounded-2xl border border-base-600 bg-base-900/90 backdrop-blur shadow-card p-4">
+        <div className="flex items-center gap-4">
+          <ProgressRing pct={64} id="preview">
+            <span className="font-display font-bold text-[13px] text-ink-100">64%</span>
+          </ProgressRing>
+          <div className="min-w-0">
+            <p className="text-[11px] text-ink-500">Your roadmap</p>
+            <p className="font-display font-semibold text-sm text-ink-100 truncate">
+              Backend Engineer · 30 days
+            </p>
+          </div>
+        </div>
+        <ul className="mt-4 space-y-2.5">
+          {rows.map((r) => (
+            <li key={r.range} className="flex items-center gap-2.5 text-xs">
+              {r.state === "done" && (
+                <span className="w-4 h-4 rounded-full bg-signal-teal flex items-center justify-center shrink-0">
+                  <Check className="w-2.5 h-2.5 text-base-950" strokeWidth={3.5} />
+                </span>
+              )}
+              {r.state === "current" && (
+                <span className="w-4 h-4 rounded-full bg-brand-gradient shadow-glow-sm shrink-0" />
+              )}
+              {r.state === "next" && (
+                <span className="w-4 h-4 rounded-full border border-base-500 shrink-0" />
+              )}
+              <span className={r.state === "next" ? "text-ink-500" : "text-ink-100"}>
+                {r.label}
+              </span>
+              <span className="ml-auto text-ink-500 tabular-nums">{r.range}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      <div className="absolute right-0 bottom-0 w-[80%] rounded-2xl border border-accent/30 bg-base-850/95 backdrop-blur shadow-glow p-4">
+        <div className="flex items-center gap-2 mb-2">
+          <span className="w-1.5 h-1.5 rounded-full bg-signal-rose animate-pulseDot" />
+          <p className="text-[11px] text-ink-500">Live interview</p>
+        </div>
+        <p className="text-[13px] text-ink-100 leading-snug">
+          Walk me through a time you had to scale a slow service.
+        </p>
+        <div className="mt-3 flex items-center justify-between">
+          <span className="flex items-center gap-1.5 text-[11px] text-accent-soft">
+            <Mic className="w-3.5 h-3.5" strokeWidth={2.25} /> Listening…
+          </span>
+          <span className="text-[11px] font-semibold text-signal-teal bg-signal-teal/10 border border-signal-teal/30 rounded-full px-2 py-0.5">
+            Clarity 82
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 /** Shown once, right after signup, so the user can save the only credential
  * that gets them back into their (email-less) account from another device. */
@@ -123,59 +193,64 @@ export default function AuthScreen({ onAdminLogin }) {
   return (
     <div className="min-h-screen w-full flex bg-base-950 text-ink-100">
       {/* Hero panel */}
-      <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden bg-aurora border-r border-base-700 flex-col justify-between p-12">
-        <div>
-          <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl overflow-hidden shrink-0">
-              <img src={logo} alt="LevelUp" className="w-full h-full object-contain" />
-            </div>
-            <span className="font-display font-bold text-lg"><span className="text-ink-100">Level</span><span className="text-gradient-brand">Up</span></span>
+      <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden bg-aurora border-r border-base-700 flex-col justify-between gap-10 p-12 xl:p-14">
+        <div className="flex items-center gap-3">
+          <div className="w-11 h-11 rounded-xl overflow-hidden shrink-0 shadow-glow-sm">
+            <img src={logo} alt="LevelUp" className="w-full h-full object-contain" />
           </div>
-
-          <h1 className="font-display font-extrabold text-4xl xl:text-5xl leading-tight mt-14 max-w-lg text-ink-100">
+          <span className="font-display font-extrabold text-2xl tracking-tight">
             <span className="text-ink-100">Level</span>
             <span className="text-gradient-brand">Up</span>
-            <span className="text-ink-500 font-semibold"> — </span>
+          </span>
+        </div>
+
+        <div>
+          <h1 className="font-display font-extrabold text-5xl xl:text-6xl leading-[1.05] max-w-lg text-ink-100">
             Make your move.
           </h1>
-          <p className="text-ink-300 text-base mt-4 max-w-md leading-relaxed">
-            One resume upload turns into a personalized roadmap, live AI mock
-            interviews, and company-specific readiness tests — with a
-            certificate to show for it.
+          <p className="text-ink-300 text-base mt-5 max-w-md leading-relaxed">
+            Upload your resume once. Get a day-by-day roadmap, live AI mock
+            interviews and company-specific tests, plus a certificate when
+            you're ready.
           </p>
+          <div className="mt-10">
+            <ProductPreview />
+          </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-4 max-w-lg">
-          {FEATURES.map((f) => (
-            <div
-              key={f.title}
-              className="rounded-2xl border border-base-600 bg-base-900/60 backdrop-blur-sm p-4"
-            >
-              <div className="w-8 h-8 rounded-lg bg-brand-gradient-soft border border-accent/20 flex items-center justify-center mb-2.5">
-                <f.icon className="w-4 h-4 text-accent-soft" strokeWidth={2.25} />
-              </div>
-              <p className="font-display font-semibold text-sm text-ink-100 mb-1">
-                {f.title}
-              </p>
-              <p className="text-xs text-ink-500 leading-relaxed">{f.body}</p>
-            </div>
-          ))}
-        </div>
-
-        <div className="brand-badge w-fit">
-          <span className="brand-dot" />
-          A product from <span className="brand-name">Aakara.AI</span>
+        <div>
+          <ul className="grid grid-cols-2 gap-x-8 gap-y-4 max-w-lg">
+            {FEATURES.map((f) => (
+              <li key={f.title} className="flex items-start gap-2.5">
+                <f.icon className="w-4 h-4 mt-0.5 text-accent-soft shrink-0" strokeWidth={2.25} />
+                <span className="text-xs text-ink-500 leading-snug">
+                  <span className="block font-semibold text-ink-100 text-[13px]">{f.title}</span>
+                  {f.short}
+                </span>
+              </li>
+            ))}
+          </ul>
+          <div className="brand-badge w-fit mt-8">
+            <span className="brand-dot" />
+            A product from <span className="brand-name">Aakara.AI</span>
+          </div>
         </div>
       </div>
 
       {/* Form panel */}
       <div className="flex-1 flex items-center justify-center p-6 sm:p-10">
         <div className="w-full max-w-sm">
-          <div className="lg:hidden flex items-center gap-2.5 justify-center mb-8">
-            <div className="w-8 h-8 rounded-xl overflow-hidden shrink-0">
-              <img src={logo} alt="LevelUp" className="w-full h-full object-contain" />
+          <div className="lg:hidden flex flex-col items-center gap-1.5 mb-8">
+            <div className="flex items-center gap-2.5">
+              <div className="w-9 h-9 rounded-xl overflow-hidden shrink-0 shadow-glow-sm">
+                <img src={logo} alt="LevelUp" className="w-full h-full object-contain" />
+              </div>
+              <span className="font-display font-extrabold text-2xl tracking-tight">
+                <span className="text-ink-100">Level</span>
+                <span className="text-gradient-brand">Up</span>
+              </span>
             </div>
-            <span className="font-display font-bold text-lg"><span className="text-ink-100">Level</span><span className="text-gradient-brand">Up</span></span>
+            <p className="text-sm text-ink-500">Make your move.</p>
           </div>
 
           <div className="flex items-center bg-base-800 border border-base-600 rounded-xl p-1 mb-6 text-sm">

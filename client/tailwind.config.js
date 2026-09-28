@@ -24,6 +24,7 @@ export default {
           dim: "#4B3AA8",
           pink: "#F857A6",
           blue: "#4FA6FF",
+          cyan: "#22D3EE",
         },
         signal: {
           teal: "#2DD9C4",
@@ -32,13 +33,13 @@ export default {
         },
       },
       fontFamily: {
-        display: ["Manrope", "system-ui", "sans-serif"],
+        display: ["Lexend", "Manrope", "system-ui", "sans-serif"],
         body: ["Manrope", "system-ui", "sans-serif"],
         mono: ["JetBrains Mono", "ui-monospace", "SFMono-Regular", "monospace"],
       },
       backgroundImage: {
-        "brand-gradient": "linear-gradient(135deg, #7C5CFF 0%, #9B6CFF 45%, #F857A6 100%)",
-        "brand-gradient-soft": "linear-gradient(135deg, rgba(124,92,255,0.18) 0%, rgba(248,87,166,0.12) 100%)",
+        "brand-gradient": "linear-gradient(135deg, #3D6BFF 0%, #7C5CFF 48%, #F857A6 100%)",
+        "brand-gradient-soft": "linear-gradient(135deg, rgba(61,107,255,0.18) 0%, rgba(124,92,255,0.14) 50%, rgba(248,87,166,0.12) 100%)",
         "aurora": "radial-gradient(60% 60% at 20% 15%, rgba(124,92,255,0.20) 0%, rgba(124,92,255,0) 60%), radial-gradient(50% 50% at 85% 25%, rgba(79,166,255,0.16) 0%, rgba(79,166,255,0) 60%), radial-gradient(55% 55% at 60% 90%, rgba(248,87,166,0.14) 0%, rgba(248,87,166,0) 60%)",
       },
       boxShadow: {
