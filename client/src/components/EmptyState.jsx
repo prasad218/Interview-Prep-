@@ -1,3 +1,5 @@
+import { Sparkles } from "lucide-react";
+
 export default function EmptyState({ onNewChat }) {
   return (
     <div className="flex-1 relative flex flex-col items-center justify-center text-center px-6 overflow-hidden">
@@ -5,7 +7,7 @@ export default function EmptyState({ onNewChat }) {
 
       <div className="relative z-10 flex flex-col items-center">
         <div className="w-16 h-16 rounded-2xl bg-brand-gradient shadow-glow flex items-center justify-center mb-5 animate-floatSlow">
-          <span className="text-white text-2xl font-bold">✦</span>
+          <Sparkles className="w-7 h-7 text-white" strokeWidth={2.25} />
         </div>
         <h1 className="font-display text-2xl font-bold text-ink-100 mb-2">
           Start a new conversation

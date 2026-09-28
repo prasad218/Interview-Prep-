@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { ChevronDown, ChevronRight } from "lucide-react";
 import * as api from "../api/client.js";
 import ResumeSetupForm, { INTERVIEW_CATEGORIES } from "./ResumeSetupForm.jsx";
 
@@ -33,8 +34,9 @@ function QuestionCard({ q, index }) {
             {q.question}
           </span>
         </span>
-        <span className="shrink-0 text-ink-500 text-xs mt-1">
-          {open ? "Hide answer ▾" : "Show answer ▸"}
+        <span className="shrink-0 flex items-center gap-1 text-ink-500 text-xs mt-1">
+          {open ? "Hide answer" : "Show answer"}
+          {open ? <ChevronDown className="w-3.5 h-3.5" strokeWidth={2} /> : <ChevronRight className="w-3.5 h-3.5" strokeWidth={2} />}
         </span>
       </button>
 

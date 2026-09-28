@@ -1,4 +1,5 @@
 import { providerColor, shortModelName } from "../lib/providerColors.js";
+import { ChevronDown } from "lucide-react";
 
 export default function ModelSelector({ models, value, onChange }) {
   return (
@@ -18,7 +19,7 @@ export default function ModelSelector({ models, value, onChange }) {
           </option>
         ))}
       </select>
-      <span className="absolute right-2 text-ink-500 text-[10px] pointer-events-none">▾</span>
+      <ChevronDown className="absolute right-2 w-3.5 h-3.5 text-ink-500 pointer-events-none" strokeWidth={2} />
     </div>
   );
 }

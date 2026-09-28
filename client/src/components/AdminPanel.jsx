@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { ArrowLeft } from "lucide-react";
 import * as api from "../api/client.js";
 import { getAdminSecret, setAdminSecret } from "../api/adminAuth.js";
 import logo from "../assets/logo.png";
@@ -159,9 +160,9 @@ function AdminLoginForm({ onSuccess, onExit }) {
 
         <button
           onClick={onExit}
-          className="w-full text-center text-xs text-ink-500 hover:text-ink-100 transition-colors mt-6"
+          className="w-full flex items-center justify-center gap-1.5 text-xs text-ink-500 hover:text-ink-100 transition-colors mt-6"
         >
-          ← Back to candidate sign in
+          <ArrowLeft className="w-3.5 h-3.5" strokeWidth={2} /> Back to candidate sign in
         </button>
       </div>
     </div>

@@ -1,4 +1,5 @@
 import ReactMarkdown from "react-markdown";
+import { Sparkles } from "lucide-react";
 import remarkGfm from "remark-gfm";
 import { providerColor, shortModelName } from "../lib/providerColors.js";
 
@@ -18,7 +19,7 @@ export default function MessageBubble({ role, content, model, streaming }) {
   return (
     <div className="flex justify-start items-start gap-2.5 animate-fadeIn">
       <div className="w-7 h-7 rounded-lg bg-brand-gradient-soft border border-accent-dim/40 flex items-center justify-center shrink-0 mt-1">
-        <span className="text-accent-soft text-xs">✦</span>
+        <Sparkles className="w-3.5 h-3.5 text-accent-soft" strokeWidth={2.25} />
       </div>
       <div className="max-w-[80%] min-w-0">
         {model && (

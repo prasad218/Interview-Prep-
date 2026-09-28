@@ -1,4 +1,5 @@
 import { useRef, useState, useEffect } from "react";
+import { ArrowUp } from "lucide-react";
 
 export default function InputBar({ onSend, disabled, placeholder }) {
   const [value, setValue] = useState("");
@@ -43,7 +44,7 @@ export default function InputBar({ onSend, disabled, placeholder }) {
           className="shrink-0 w-8 h-8 rounded-full bg-brand-gradient hover:opacity-90 disabled:bg-base-600 disabled:bg-none disabled:opacity-60 disabled:cursor-not-allowed transition-all flex items-center justify-center text-white"
           title="Send"
         >
-          ↑
+          <ArrowUp className="w-[18px] h-[18px]" strokeWidth={2.5} />
         </button>
       </div>
       <p className="text-center text-[11px] text-ink-500 mt-2">
