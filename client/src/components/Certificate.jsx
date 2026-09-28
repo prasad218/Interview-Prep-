@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Award, Download } from "lucide-react";
 
 async function downloadCertificatePdf(certificate) {
   const { jsPDF } = await import("jspdf");
@@ -95,7 +96,7 @@ export default function Certificate({ certificate }) {
 
   return (
     <div className="rounded-2xl border-2 border-accent/40 bg-aurora p-6 sm:p-8 text-center relative overflow-hidden">
-      <div className="absolute top-3 right-3 text-3xl">🏅</div>
+      <Award className="absolute top-3 right-3 w-8 h-8 text-accent-soft" strokeWidth={1.75} />
       <p className="text-[11px] font-semibold tracking-widest text-accent-soft uppercase">
         LevelUp
       </p>
@@ -116,7 +117,7 @@ export default function Certificate({ certificate }) {
         disabled={downloading}
         className="mt-5 inline-flex items-center gap-1.5 rounded-xl bg-brand-gradient hover:opacity-90 shadow-glow-sm disabled:opacity-60 transition-opacity px-5 py-2.5 text-sm font-semibold text-white"
       >
-        {downloading ? "Preparing PDF…" : "⬇ Download Certificate"}
+        {downloading ? "Preparing PDF…" : (<><Download className="w-4 h-4" strokeWidth={2.25} /> Download certificate</>)}
       </button>
 
       <p className="text-[10px] text-ink-500 mt-4 max-w-md mx-auto leading-relaxed">
