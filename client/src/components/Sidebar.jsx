@@ -1,5 +1,6 @@
 import { useState } from "react";
 import logo from "../assets/logo.png";
+import { X, Plus, Pencil, KeyRound, LogOut } from "lucide-react";
 
 function formatDate(iso) {
   const d = new Date(iso);
@@ -73,7 +74,7 @@ export default function Sidebar({
               className="md:hidden shrink-0 w-7 h-7 flex items-center justify-center rounded-lg text-ink-500 hover:text-ink-100 hover:bg-base-800"
               title="Close sidebar"
             >
-              ✕
+              <X className="w-4 h-4" strokeWidth={2} />
             </button>
           </div>
 
@@ -82,7 +83,7 @@ export default function Sidebar({
               onClick={onNewChat}
               className="w-full flex items-center justify-center gap-2 rounded-xl bg-brand-gradient hover:opacity-90 transition-opacity shadow-glow-sm px-3 py-2.5 text-sm font-semibold text-white"
             >
-              <span className="text-base leading-none">＋</span>
+              <Plus className="w-4 h-4" strokeWidth={2.25} />
               New chat
             </button>
           </div>
@@ -127,9 +128,9 @@ export default function Sidebar({
                           e.stopPropagation();
                           startEdit(c);
                         }}
-                        className="text-ink-500 hover:text-ink-100 px-1"
+                        className="text-ink-500 hover:text-ink-100 p-1"
                       >
-                        ✎
+                        <Pencil className="w-3.5 h-3.5" strokeWidth={2} />
                       </button>
                       <button
                         title="Delete"
@@ -137,9 +138,9 @@ export default function Sidebar({
                           e.stopPropagation();
                           onDelete(c.id);
                         }}
-                        className="text-ink-500 hover:text-signal-rose px-1"
+                        className="text-ink-500 hover:text-signal-rose p-1"
                       >
-                        ✕
+                        <X className="w-3.5 h-3.5" strokeWidth={2} />
                       </button>
                     </span>
                   </div>
@@ -154,21 +155,21 @@ export default function Sidebar({
           <div className="p-3 border-t border-base-700 space-y-2.5">
             {user && (
               <div className="flex items-center gap-2.5 rounded-xl bg-base-800 border border-base-700 px-3 py-2.5">
-                <div className="w-8 h-8 rounded-full bg-brand-gradient flex items-center justify-center text-white text-xs font-bold shrink-0">
-  🔑
-</div>
-<div className="min-w-0 flex-1">
-  <p className="text-xs text-ink-100 font-mono tracking-wide truncate">
-    {user.loginCode}
-  </p>
-  <p className="text-[10px] text-ink-500 truncate">Signed in</p>
-</div>
+                <div className="w-8 h-8 rounded-full bg-brand-gradient flex items-center justify-center shrink-0">
+                  <KeyRound className="w-3.5 h-3.5 text-white" strokeWidth={2.25} />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs text-ink-100 font-mono tracking-wide truncate">
+                    {user.loginCode}
+                  </p>
+                  <p className="text-[10px] text-ink-500 truncate">Signed in</p>
+                </div>
                 <button
                   onClick={onLogout}
                   title="Log out"
-                  className="shrink-0 text-ink-500 hover:text-signal-rose text-xs px-1.5"
+                  className="shrink-0 text-ink-500 hover:text-signal-rose p-1.5"
                 >
-                  ⏻
+                  <LogOut className="w-3.5 h-3.5" strokeWidth={2} />
                 </button>
               </div>
             )}

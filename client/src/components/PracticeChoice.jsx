@@ -1,5 +1,6 @@
 import logo from "../assets/logo.png";
 import { useAuth } from "../context/AuthContext.jsx";
+import { ArrowLeft, Zap, Map } from "lucide-react";
 
 export default function PracticeChoice({ onQuickPractice, onBuildRoadmap }) {
   const { logout } = useAuth();
@@ -13,7 +14,7 @@ export default function PracticeChoice({ onQuickPractice, onBuildRoadmap }) {
         title="Log out"
         className="absolute top-4 left-4 sm:top-6 sm:left-6 z-10 flex items-center gap-1.5 text-ink-500 hover:text-ink-100 text-xs font-medium px-3 py-1.5 rounded-lg border border-base-700 hover:border-base-600 bg-base-900/40 transition-colors"
       >
-        <span>←</span> Log out
+        <ArrowLeft className="w-3.5 h-3.5" strokeWidth={2} /> Log out
       </button>
 
       <div className="relative z-10 flex flex-col items-center max-w-md w-full">
@@ -35,8 +36,8 @@ export default function PracticeChoice({ onQuickPractice, onBuildRoadmap }) {
             className="w-full text-left rounded-2xl border border-base-600 bg-base-800/60 hover:border-signal-teal/40 hover:bg-base-800 transition-colors px-5 py-4"
           >
             <span className="flex items-center gap-3">
-              <span className="w-10 h-10 shrink-0 rounded-xl bg-signal-teal/15 border border-signal-teal/30 flex items-center justify-center text-lg">
-                ⚡
+              <span className="w-10 h-10 shrink-0 rounded-xl bg-signal-teal/15 border border-signal-teal/30 flex items-center justify-center">
+                <Zap className="w-[18px] h-[18px] text-signal-teal" strokeWidth={2.25} />
               </span>
               <span className="flex-1 min-w-0">
                 <span className="block font-display font-semibold text-ink-100 text-sm mb-0.5">
@@ -54,8 +55,8 @@ export default function PracticeChoice({ onQuickPractice, onBuildRoadmap }) {
             className="w-full text-left rounded-2xl border border-base-600 bg-base-800/60 hover:border-brand-500/40 hover:bg-base-800 transition-colors px-5 py-4"
           >
             <span className="flex items-center gap-3">
-              <span className="w-10 h-10 shrink-0 rounded-xl bg-brand-gradient shadow-glow flex items-center justify-center text-lg">
-                🗺️
+              <span className="w-10 h-10 shrink-0 rounded-xl bg-brand-gradient shadow-glow flex items-center justify-center">
+                <Map className="w-[18px] h-[18px] text-white" strokeWidth={2.25} />
               </span>
               <span className="flex-1 min-w-0">
                 <span className="block font-display font-semibold text-ink-100 text-sm mb-0.5">

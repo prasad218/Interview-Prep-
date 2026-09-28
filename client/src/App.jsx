@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback, useRef } from "react";
+import { Map } from "lucide-react";
 import Sidebar from "./components/Sidebar.jsx";
 import Header from "./components/Header.jsx";
 import ChatArea from "./components/ChatArea.jsx";
@@ -32,7 +33,7 @@ function GenerateRoadmapPrompt({ onGenerate, generating, error }) {
     <div className="flex-1 flex items-center justify-center p-6">
       <div className="text-center max-w-sm">
         <div className="w-14 h-14 rounded-2xl bg-brand-gradient shadow-glow mx-auto mb-5 flex items-center justify-center">
-          <span className="text-white text-2xl">🗺️</span>
+          <Map className="w-6 h-6 text-white" strokeWidth={2.25} />
         </div>
         <h2 className="font-display font-bold text-lg mb-2">
           Your roadmap isn't generated yet

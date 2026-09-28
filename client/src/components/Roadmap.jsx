@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import * as api from "../api/client.js";
+import { Check, ChevronDown, ChevronRight, RefreshCw, ArrowRight } from "lucide-react";
 
 function PhaseCard({ phase, completedSet, onToggle }) {
   const [open, setOpen] = useState(true);
@@ -25,7 +26,9 @@ function PhaseCard({ phase, completedSet, onToggle }) {
           </div>
           <p className="font-display font-semibold text-sm text-ink-100">{phase.title}</p>
         </div>
-        <span className="text-ink-500 text-xs shrink-0">{open ? "▾" : "▸"}</span>
+        <span className="text-ink-500 shrink-0">
+          {open ? <ChevronDown className="w-4 h-4" strokeWidth={2} /> : <ChevronRight className="w-4 h-4" strokeWidth={2} />}
+        </span>
       </button>
 
       {open && (
@@ -55,7 +58,7 @@ function PhaseCard({ phase, completedSet, onToggle }) {
                       }`}
                       aria-label={isDone ? "Mark incomplete" : "Mark complete"}
                     >
-                      ✓
+                      {isDone && <Check className="w-3 h-3" strokeWidth={3} />}
                     </button>
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2 flex-wrap mb-0.5">
@@ -91,9 +94,9 @@ function CompanyTrackCard({ track, onTakeTest }) {
         <h3 className="font-display font-semibold text-sm text-ink-100">{track.company}</h3>
         <button
           onClick={() => onTakeTest(track.company)}
-          className="text-xs font-medium text-accent-soft hover:text-white border border-accent/40 hover:bg-brand-gradient rounded-lg px-3 py-1.5 transition-colors shrink-0"
+          className="flex items-center gap-1.5 text-xs font-medium text-accent-soft hover:text-white border border-accent/40 hover:bg-brand-gradient rounded-lg px-3 py-1.5 transition-colors shrink-0"
         >
-          Take {track.company} test →
+          Take {track.company} test <ArrowRight className="w-3.5 h-3.5" strokeWidth={2} />
         </button>
       </div>
       <div className="space-y-3">
@@ -110,7 +113,7 @@ function CompanyTrackCard({ track, onTakeTest }) {
               <ul className="mt-1 space-y-0.5">
                 {r.prepTips.map((tip, ti) => (
                   <li key={ti} className="text-[11px] text-ink-500 flex gap-1.5">
-                    <span>→</span>
+                    <ArrowRight className="w-3 h-3 mt-0.5 shrink-0" strokeWidth={2} />
                     <span>{tip}</span>
                   </li>
                 ))}
@@ -188,9 +191,10 @@ export default function Roadmap({ roadmap, onRoadmapChange, onGoTest, onEditProf
             <button
               onClick={handleRegenerate}
               disabled={regenerating}
-              className="text-xs font-medium text-white bg-brand-gradient hover:opacity-90 disabled:opacity-50 rounded-lg px-3 py-2 transition-opacity"
+              className="flex items-center gap-1.5 text-xs font-medium text-white bg-brand-gradient hover:opacity-90 disabled:opacity-50 rounded-lg px-3 py-2 transition-opacity"
             >
-              {regenerating ? "Regenerating…" : "↻ Regenerate"}
+              <RefreshCw className={`w-3.5 h-3.5 ${regenerating ? "animate-spin" : ""}`} strokeWidth={2} />
+              {regenerating ? "Regenerating…" : "Regenerate"}
             </button>
           </div>
         </div>
@@ -255,9 +259,9 @@ export default function Roadmap({ roadmap, onRoadmapChange, onGoTest, onEditProf
           </div>
           <button
             onClick={() => onGoTest()}
-            className="rounded-xl bg-brand-gradient hover:opacity-90 shadow-glow-sm transition-opacity px-4 py-2.5 text-sm font-semibold text-white shrink-0"
+            className="flex items-center gap-2 rounded-xl bg-brand-gradient hover:opacity-90 shadow-glow-sm transition-opacity px-4 py-2.5 text-sm font-semibold text-white shrink-0"
           >
-            Go to Test Center →
+            Go to Test Center <ArrowRight className="w-4 h-4" strokeWidth={2.25} />
           </button>
         </div>
       </div>

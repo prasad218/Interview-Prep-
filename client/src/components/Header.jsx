@@ -1,4 +1,5 @@
 import ModelSelector from "./ModelSelector.jsx";
+import { Menu } from "lucide-react";
 
 const TABS = [
   { key: "roadmap", label: "Roadmap", short: "Roadmap" },
@@ -27,10 +28,15 @@ export default function Header({
           className="text-ink-300 hover:text-ink-100 w-8 h-8 flex items-center justify-center rounded-lg hover:bg-base-800 transition-colors shrink-0"
           title={sidebarOpen ? "Collapse sidebar" : "Expand sidebar"}
         >
-          ☰
+          <Menu className="w-[18px] h-[18px]" strokeWidth={2} />
         </button>
         <h2 className="font-display font-semibold text-sm text-ink-100 truncate">
-          {title || "LevelUp"}
+          {title || (
+            <>
+              <span className="text-ink-100">Level</span>
+              <span className="text-gradient-brand">Up</span>
+            </>
+          )}
         </h2>
       </div>
 

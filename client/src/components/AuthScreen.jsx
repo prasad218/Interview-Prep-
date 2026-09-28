@@ -3,25 +3,26 @@ import { useAuth } from "../context/AuthContext.jsx";
 import * as api from "../api/client.js";
 import { setToken } from "../api/authToken.js";
 import logo from "../assets/logo.png";
+import { Map, Mic, Building2, Award, KeyRound } from "lucide-react";
 
 const FEATURES = [
   {
-    icon: "🗺️",
+    icon: Map,
     title: "Personalized roadmap",
     body: "Upload your resume once — get a day-by-day plan built around your timeline and daily study hours.",
   },
   {
-    icon: "🎙️",
+    icon: Mic,
     title: "Live mock interviews",
     body: "Practice with an AI interviewer that asks follow-ups based on your actual answers, not a script.",
   },
   {
-    icon: "🏢",
+    icon: Building2,
     title: "Company-specific prep",
     body: "Tell us which companies you're targeting — get their typical rounds and tailored tests.",
   },
   {
-    icon: "🏅",
+    icon: Award,
     title: "Certificates that prove it",
     body: "Clear a readiness test and download a certificate + badge to show your preparation.",
   },
@@ -45,7 +46,7 @@ function SavedCodeScreen({ code, onContinue }) {
   return (
     <div className="w-full max-w-sm text-center">
       <div className="w-14 h-14 rounded-2xl bg-brand-gradient shadow-glow mx-auto mb-5 flex items-center justify-center">
-        <span className="text-white text-2xl">🔑</span>
+        <KeyRound className="w-6 h-6 text-white" strokeWidth={2.25} />
       </div>
       <h2 className="font-display font-bold text-xl mb-2">Save your login code</h2>
       <p className="text-sm text-ink-500 mb-6 leading-relaxed">
@@ -150,7 +151,9 @@ export default function AuthScreen({ onAdminLogin }) {
               key={f.title}
               className="rounded-2xl border border-base-600 bg-base-900/60 backdrop-blur-sm p-4"
             >
-              <div className="text-xl mb-2">{f.icon}</div>
+              <div className="w-8 h-8 rounded-lg bg-brand-gradient-soft border border-accent/20 flex items-center justify-center mb-2.5">
+                <f.icon className="w-4 h-4 text-accent-soft" strokeWidth={2.25} />
+              </div>
               <p className="font-display font-semibold text-sm text-ink-100 mb-1">
                 {f.title}
               </p>
