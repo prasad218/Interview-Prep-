@@ -4,7 +4,7 @@ import * as api from "../api/client.js";
 import { setToken } from "../api/authToken.js";
 import logo from "../assets/logo.png";
 import ProgressRing from "./ProgressRing.jsx";
-import { Map, Mic, Building2, Award, KeyRound, Check } from "lucide-react";
+import { Map, Mic, Building2, Award, KeyRound, Check, ArrowRight } from "lucide-react";
 
 const FEATURES = [
   {
@@ -41,7 +41,7 @@ function ProductPreview() {
     { range: "Days 15–21", label: "Mock interviews", state: "next" },
   ];
   return (
-    <div aria-hidden="true" className="relative w-full max-w-md h-[310px] select-none">
+    <div aria-hidden="true" className="relative w-full max-w-md h-[345px] select-none">
       <div className="absolute left-0 top-0 w-[88%] rounded-2xl border border-base-600 bg-base-900/90 backdrop-blur shadow-card p-4">
         <div className="flex items-center gap-4">
           <ProgressRing pct={64} id="preview">
@@ -77,7 +77,7 @@ function ProductPreview() {
         </ul>
       </div>
 
-      <div className="absolute right-0 bottom-0 w-[80%] rounded-2xl border border-accent/30 bg-base-850/95 backdrop-blur shadow-glow p-4">
+      <div className="absolute -right-3 bottom-0 w-[80%] rounded-2xl border border-accent/30 bg-base-850 shadow-glow p-4">
         <div className="flex items-center gap-2 mb-2">
           <span className="w-1.5 h-1.5 rounded-full bg-signal-rose animate-pulseDot" />
           <p className="text-[11px] text-ink-500">Live interview</p>
@@ -193,7 +193,7 @@ export default function AuthScreen({ onAdminLogin }) {
   return (
     <div className="min-h-screen w-full flex bg-base-950 text-ink-100">
       {/* Hero panel */}
-      <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden bg-aurora border-r border-base-700 flex-col justify-between gap-10 p-12 xl:p-14">
+      <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden bg-aurora border-r border-base-700 flex-col justify-between gap-8 px-12 xl:px-14 py-10">
         <div className="flex items-center gap-3">
           <div className="w-11 h-11 rounded-xl overflow-hidden shrink-0 shadow-glow-sm">
             <img src={logo} alt="LevelUp" className="w-full h-full object-contain" />
@@ -205,32 +205,29 @@ export default function AuthScreen({ onAdminLogin }) {
         </div>
 
         <div>
-          <h1 className="font-display font-extrabold text-5xl xl:text-6xl leading-[1.05] max-w-lg text-ink-100">
+          <h1 className="font-display font-extrabold text-4xl xl:text-5xl 2xl:text-6xl leading-[1.05] text-ink-100">
             Make your move.
           </h1>
-          <p className="text-ink-300 text-base mt-5 max-w-md leading-relaxed">
+          <p className="text-ink-300 text-[15px] mt-4 max-w-md leading-relaxed">
             Upload your resume once. Get a day-by-day roadmap, live AI mock
             interviews and company-specific tests, plus a certificate when
             you're ready.
           </p>
-          <div className="mt-10">
+          <div className="mt-8">
             <ProductPreview />
           </div>
         </div>
 
         <div>
-          <ul className="grid grid-cols-2 gap-x-8 gap-y-4 max-w-lg">
+          <ul className="flex flex-wrap gap-x-6 gap-y-2.5">
             {FEATURES.map((f) => (
-              <li key={f.title} className="flex items-start gap-2.5">
-                <f.icon className="w-4 h-4 mt-0.5 text-accent-soft shrink-0" strokeWidth={2.25} />
-                <span className="text-xs text-ink-500 leading-snug">
-                  <span className="block font-semibold text-ink-100 text-[13px]">{f.title}</span>
-                  {f.short}
-                </span>
+              <li key={f.title} className="flex items-center gap-2 text-[13px] text-ink-300">
+                <f.icon className="w-4 h-4 text-accent-soft shrink-0" strokeWidth={2.25} />
+                {f.title}
               </li>
             ))}
           </ul>
-          <div className="brand-badge w-fit mt-8">
+          <div className="brand-badge w-fit mt-6">
             <span className="brand-dot" />
             A product from <span className="brand-name">Aakara.AI</span>
           </div>
@@ -354,9 +351,9 @@ export default function AuthScreen({ onAdminLogin }) {
           {onAdminLogin && (
             <button
               onClick={onAdminLogin}
-              className="w-full text-center text-xs text-ink-500 hover:text-ink-100 transition-colors mt-4"
+              className="w-full flex items-center justify-center gap-1 text-xs text-ink-500 hover:text-ink-100 transition-colors mt-4"
             >
-              Admin login →
+              Admin login <ArrowRight className="w-3.5 h-3.5" strokeWidth={2} />
             </button>
           )}
         </div>

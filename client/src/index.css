@@ -40,6 +40,17 @@
       transition-duration: 0.01ms !important;
     }
   }
+  /* Keep browser-autofilled inputs on the dark theme instead of bright white */
+  input:-webkit-autofill,
+  input:-webkit-autofill:hover,
+  input:-webkit-autofill:focus,
+  textarea:-webkit-autofill {
+    -webkit-text-fill-color: theme("colors.ink.100");
+    caret-color: theme("colors.ink.100");
+    -webkit-box-shadow: 0 0 0 1000px theme("colors.base.800") inset;
+    box-shadow: 0 0 0 1000px theme("colors.base.800") inset;
+    transition: background-color 9999s ease-in-out 0s;
+  }
   :focus-visible {
     outline: 2px solid theme("colors.accent.DEFAULT");
     outline-offset: 2px;
