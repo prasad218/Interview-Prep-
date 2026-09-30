@@ -1,21 +1,9 @@
 import { Router } from "express";
 import * as db from "../db.js";
 import { requireAuth } from "../auth.js";
-import { chatCompletion } from "../openrouter.js";
+import { chatCompletionJSON } from "../openrouter.js";
 
 const router = Router();
-
-function safeParseJSON(raw) {
-  let cleaned = (raw || "").trim();
-  cleaned = cleaned.replace(/^```(?:json)?\s*/i, "").replace(/```\s*$/i, "");
-  try {
-    return JSON.parse(cleaned);
-  } catch {
-    const match = cleaned.match(/\{[\s\S]*\}/);
-    if (!match) throw new Error("Model response was not valid JSON.");
-    return JSON.parse(match[0]);
-  }
-}
 
 function buildPrompt(profile) {
   const { resumeText, targetRole, daysToPlacement, dailyHours, targetCompanies } = profile;
@@ -89,13 +77,13 @@ router.post("/generate", requireAuth, async (req, res) => {
     ];
     const model =
       req.body?.model || process.env.DEFAULT_MODEL || "openrouter/free";
-    const raw = await chatCompletion({
+    const parsed = await chatCompletionJSON({
       model,
       messages,
       temperature: 0.6,
-      jsonMode: true,
+      maxTokens: 4500,
+      retries: 1,
     });
-    const parsed = safeParseJSON(raw);
 
     const roadmap = {
       ...parsed,

@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { nanoid } from "nanoid";
-import { chatCompletion } from "../openrouter.js";
+import { chatCompletionJSON } from "../openrouter.js";
 import { requireAuth } from "../auth.js";
 import * as db from "../db.js";
 import {
@@ -50,18 +50,6 @@ const CATEGORY_LIST = [
   "System Design",
   "Behavioral (HR)",
 ];
-
-function safeParseJSON(raw) {
-  let cleaned = (raw || "").trim();
-  cleaned = cleaned.replace(/^```(?:json)?\s*/i, "").replace(/```\s*$/i, "");
-  try {
-    return JSON.parse(cleaned);
-  } catch {
-    const match = cleaned.match(/\{[\s\S]*\}/);
-    if (!match) throw new Error("Model response was not valid JSON.");
-    return JSON.parse(match[0]);
-  }
-}
 
 function systemPersona() {
   return (
@@ -118,13 +106,13 @@ async function askFirstQuestion(session) {
         )}, "difficulty": "Easy"|"Medium"|"Hard"}`,
     },
   ];
-  const raw = await chatCompletion({
+  const parsed = await chatCompletionJSON({
     model: session.model,
     messages,
     temperature: 0.7,
-    jsonMode: true,
+    maxTokens: 600,
+    retries: 1,
   });
-  const parsed = safeParseJSON(raw);
   return {
     question:
       parsed.question ||
@@ -164,13 +152,13 @@ async function askNextOrFinish(session) {
     },
   ];
 
-  const raw = await chatCompletion({
+  return chatCompletionJSON({
     model: session.model,
     messages,
     temperature: 0.65,
-    jsonMode: true,
+    maxTokens: 1500,
+    retries: 1,
   });
-  return safeParseJSON(raw);
 }
 
 // POST /api/live-interview/start
@@ -361,13 +349,13 @@ router.post("/end", async (req, res) => {
           `... one entry per category actually asked about} }`,
       },
     ];
-    const raw = await chatCompletion({
+    const report = await chatCompletionJSON({
       model: session.model,
       messages,
       temperature: 0.5,
-      jsonMode: true,
+      maxTokens: 1500,
+      retries: 1,
     });
-    const report = safeParseJSON(raw);
     session.done = true;
     session.report = report;
     res.json({ report });

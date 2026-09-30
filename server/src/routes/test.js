@@ -2,7 +2,7 @@ import { Router } from "express";
 import { nanoid } from "nanoid";
 import * as db from "../db.js";
 import { requireAuth } from "../auth.js";
-import { chatCompletion } from "../openrouter.js";
+import { chatCompletionJSON } from "../openrouter.js";
 
 const router = Router();
 const PASS_THRESHOLD = 70; // percent
@@ -18,18 +18,6 @@ setInterval(() => {
     if (s.createdAt < cutoff) sessions.delete(id);
   }
 }, 30 * 60 * 1000).unref?.();
-
-function safeParseJSON(raw) {
-  let cleaned = (raw || "").trim();
-  cleaned = cleaned.replace(/^```(?:json)?\s*/i, "").replace(/```\s*$/i, "");
-  try {
-    return JSON.parse(cleaned);
-  } catch {
-    const match = cleaned.match(/\{[\s\S]*\}/);
-    if (!match) throw new Error("Model response was not valid JSON.");
-    return JSON.parse(match[0]);
-  }
-}
 
 // POST /api/test/start  { mode: "role" | "company", company? }
 router.post("/start", requireAuth, async (req, res) => {
@@ -75,8 +63,13 @@ router.post("/start", requireAuth, async (req, res) => {
       },
     ];
     const model = process.env.DEFAULT_MODEL || "openrouter/free";
-    const raw = await chatCompletion({ model, messages, temperature: 0.7, jsonMode: true });
-    const parsed = safeParseJSON(raw);
+    const parsed = await chatCompletionJSON({
+      model,
+      messages,
+      temperature: 0.7,
+      maxTokens: 3000,
+      retries: 1,
+    });
     const questions = Array.isArray(parsed.questions) ? parsed.questions : [];
     if (questions.length === 0) throw new Error("Model returned no questions.");
 

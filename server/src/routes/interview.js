@@ -1,6 +1,6 @@
 import { Router } from "express";
 import multer from "multer";
-import { chatCompletion } from "../openrouter.js";
+import { chatCompletionJSON } from "../openrouter.js";
 
 const router = Router();
 
@@ -113,22 +113,7 @@ function buildPrompt({ resumeText, role, experience, numQuestions, focusAreas })
   ];
 }
 
-function safeParseQuestions(raw) {
-  let cleaned = raw.trim();
-  // Strip ```json ... ``` fences if the model added them anyway.
-  cleaned = cleaned.replace(/^```(?:json)?\s*/i, "").replace(/```\s*$/i, "");
-
-  let parsed;
-  try {
-    parsed = JSON.parse(cleaned);
-  } catch {
-    // Some models wrap the object in extra prose — try to grab the first
-    // {...} block.
-    const match = cleaned.match(/\{[\s\S]*\}/);
-    if (!match) throw new Error("Model response was not valid JSON.");
-    parsed = JSON.parse(match[0]);
-  }
-
+function validateQuestions(parsed) {
   const questions = Array.isArray(parsed) ? parsed : parsed.questions;
   if (!Array.isArray(questions)) {
     throw new Error("Model response didn't include a questions array.");
@@ -171,14 +156,15 @@ router.post("/generate", async (req, res) => {
       focusAreas,
     });
 
-    const raw = await chatCompletion({
+    const parsed = await chatCompletionJSON({
       model: useModel,
       messages,
       temperature: 0.6,
-      jsonMode: true,
+      maxTokens: Math.min(8000, 400 * clampedCount + 800),
+      retries: 1,
     });
 
-    const questions = safeParseQuestions(raw);
+    const questions = validateQuestions(parsed);
     res.json({ questions, model: useModel });
   } catch (err) {
     console.error("Interview generate error:", err.message);
