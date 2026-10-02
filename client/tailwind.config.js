@@ -65,12 +65,17 @@ export default {
           "0%": { backgroundPosition: "0% 50%" },
           "100%": { backgroundPosition: "200% 50%" },
         },
+        typingDot: {
+          "0%, 60%, 100%": { transform: "translateY(0)", opacity: 0.4 },
+          "30%": { transform: "translateY(-3px)", opacity: 1 },
+        },
       },
       animation: {
         fadeIn: "fadeIn 0.25s ease-out",
         pulseDot: "pulseDot 1.2s ease-in-out infinite",
         floatSlow: "floatSlow 6s ease-in-out infinite",
         shimmer: "shimmer 3s linear infinite",
+        typingDot: "typingDot 1.1s ease-in-out infinite",
       },
     },
   },

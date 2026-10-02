@@ -161,7 +161,7 @@ router.post("/generate", async (req, res) => {
       messages,
       temperature: 0.6,
       maxTokens: Math.min(8000, 400 * clampedCount + 800),
-      retries: 1,
+      retries: 2,
     });
 
     const questions = validateQuestions(parsed);

@@ -153,10 +153,16 @@ export async function chatCompletionJSON({
 
   for (let attempt = 0; attempt <= retries; attempt++) {
     try {
+      // Lower temperature a bit on each retry — more deterministic output
+      // tends to follow "respond with only JSON" instructions more reliably.
+      const attemptTemp =
+        temperature !== undefined
+          ? Math.max(0.1, temperature - attempt * 0.15)
+          : undefined;
       const raw = await chatCompletion({
         model,
         messages: attemptMessages,
-        temperature,
+        temperature: attemptTemp,
         maxTokens,
         jsonMode: true,
       });

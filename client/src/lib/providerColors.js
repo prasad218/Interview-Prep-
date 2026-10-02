@@ -22,6 +22,7 @@ export function providerColor(modelId = "") {
 }
 
 export function shortModelName(modelId = "") {
+  if (modelId === "openrouter/free") return "Free model";
   const parts = modelId.split("/");
   return parts.length > 1 ? parts.slice(1).join("/") : modelId;
 }

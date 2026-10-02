@@ -34,13 +34,19 @@ export default function MessageBubble({ role, content, model, streaming }) {
           </div>
         )}
         <div className="bg-base-800/80 border border-base-700 rounded-2xl rounded-tl-sm px-4 py-3 text-[15px] text-ink-100 shadow-card">
-          <div className="prose-chat">
-            <ReactMarkdown remarkPlugins={[remarkGfm]}>
-              {content || " "}
-            </ReactMarkdown>
-          </div>
-          {streaming && (
-            <span className="inline-block w-1.5 h-4 bg-accent-soft ml-0.5 align-middle animate-pulseDot" />
+          {streaming && !content?.trim() ? (
+            <div className="flex items-center gap-1.5 py-1" aria-label="Thinking">
+              <span className="w-1.5 h-1.5 rounded-full bg-accent-soft animate-typingDot [animation-delay:0ms]" />
+              <span className="w-1.5 h-1.5 rounded-full bg-accent-soft animate-typingDot [animation-delay:150ms]" />
+              <span className="w-1.5 h-1.5 rounded-full bg-accent-soft animate-typingDot [animation-delay:300ms]" />
+            </div>
+          ) : (
+            <div className="prose-chat">
+              <ReactMarkdown remarkPlugins={[remarkGfm]}>{content || " "}</ReactMarkdown>
+              {streaming && (
+                <span className="inline-block w-1.5 h-4 bg-accent-soft ml-0.5 align-middle animate-pulseDot" />
+              )}
+            </div>
           )}
         </div>
       </div>

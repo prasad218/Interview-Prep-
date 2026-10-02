@@ -82,7 +82,7 @@ router.post("/generate", requireAuth, async (req, res) => {
       messages,
       temperature: 0.6,
       maxTokens: 4500,
-      retries: 1,
+      retries: 2,
     });
 
     const roadmap = {
