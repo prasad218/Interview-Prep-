@@ -3,7 +3,7 @@ import * as api from "../api/client.js";
 import ResumeSetupForm, { INTERVIEW_CATEGORIES } from "./ResumeSetupForm.jsx";
 import { useAuth } from "../context/AuthContext.jsx";
 import { setToken } from "../api/authToken.js";
-import { Lock, ArrowRight, Volume2, VolumeX, Video, VideoOff, Mic, Lightbulb } from "lucide-react";
+import { Lock, ArrowRight, Volume2, VolumeX, Video, VideoOff, Mic, Lightbulb, Download } from "lucide-react";
 
 const CREDIT_COST_PER_INTERVIEW = 50;
 
@@ -683,7 +683,7 @@ export default function LiveInterview({ models, model, onModelChange }) {
                 disabled={downloadingPdf}
                 className="flex items-center gap-1.5 rounded-xl bg-brand-gradient hover:opacity-90 shadow-glow-sm disabled:opacity-60 transition-opacity px-4 py-2 text-sm font-semibold text-white"
               >
-                {downloadingPdf ? "Preparing PDF…" : "⬇ Download Report"}
+                {downloadingPdf ? "Preparing PDF…" : (<><Download className="w-4 h-4" strokeWidth={2.25} /> Download report</>)}
               </button>
               <button
                 onClick={resetAll}

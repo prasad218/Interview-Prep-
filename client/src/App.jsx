@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback, useRef } from "react";
-import { Map } from "lucide-react";
+import { Map, X } from "lucide-react";
 import Sidebar from "./components/Sidebar.jsx";
 import Header from "./components/Header.jsx";
 import ChatArea from "./components/ChatArea.jsx";
@@ -93,15 +93,22 @@ function MainApp() {
   }, []);
 
   // If the user was last mid-conversation, reopen that exact chat once the
-  // conversation list has loaded.
+  // conversation list has loaded. This runs automatically on load — the
+  // user didn't click anything — so if the saved chat no longer exists
+  // (e.g. it predates a server-side data migration) we quietly fall back
+  // to a new chat instead of surfacing a scary, persistent error banner
+  // for something the user never asked for.
   useEffect(() => {
     if (restoredChat.current) return;
     if (view !== "chat") return;
-    const savedId = user?.lastLocation?.activeId;
-    if (!savedId || conversations.length === 0) return;
-    if (!conversations.some((c) => c.id === savedId)) return;
+    if (conversations.length === 0) return;
     restoredChat.current = true;
-    loadConversation(savedId);
+    const savedId = user?.lastLocation?.activeId;
+    if (savedId && conversations.some((c) => c.id === savedId)) {
+      loadConversation(savedId);
+    }
+    // No matching saved chat (never had one, or it's gone) — just stay on
+    // the default "new chat" screen rather than erroring.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [conversations, view, user]);
 
@@ -293,12 +300,22 @@ function MainApp() {
           onModelChange={setModel}
           showModelSelector={false}
           view={view}
-          onViewChange={setView}
+          onViewChange={(v) => {
+            setError(null);
+            setView(v);
+          }}
         />
 
-        {error && (
-          <div className="bg-signal-rose/10 border-b border-signal-rose/30 text-signal-rose text-sm px-4 py-2">
-            {error}
+        {error && view === "chat" && (
+          <div className="flex items-center justify-between gap-3 bg-signal-rose/10 border-b border-signal-rose/30 text-signal-rose text-sm px-4 py-2">
+            <span>{error}</span>
+            <button
+              onClick={() => setError(null)}
+              className="shrink-0 text-signal-rose/70 hover:text-signal-rose"
+              aria-label="Dismiss"
+            >
+              <X className="w-4 h-4" strokeWidth={2} />
+            </button>
           </div>
         )}
 
@@ -322,6 +339,7 @@ function MainApp() {
             user={user}
             preselectedCompany={testPreselectCompany}
             onConsumePreselect={() => setTestPreselectCompany(null)}
+            onGoRoadmap={() => setView("roadmap")}
           />
         ) : view === "interview" ? (
           <InterviewPrep

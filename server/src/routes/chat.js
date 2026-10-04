@@ -52,10 +52,23 @@ router.post("/", async (req, res) => {
   req.on("close", () => controller.abort());
 
   try {
-    const history = [...convo.messages, userMessage].map((m) => ({
-      role: m.role,
-      content: m.content,
-    }));
+    const systemMessage = {
+      role: "system",
+      content:
+        "You are the LevelUp chat assistant, helping a job candidate with " +
+        "interview preparation, career advice, and related questions. Reply " +
+        "directly and conversationally in plain text or markdown. Never " +
+        "include internal classifier, moderation, or safety-check output " +
+        "(e.g. lines like \"User Safety: safe\") in your reply — those are " +
+        "not meant to be shown to the user.",
+    };
+    const history = [
+      systemMessage,
+      ...[...convo.messages, userMessage].map((m) => ({
+        role: m.role,
+        content: m.content,
+      })),
+    ];
 
     const fullText = await streamChatCompletion({
       model: useModel,

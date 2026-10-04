@@ -171,8 +171,18 @@ export default function InterviewPrep({ models, model, onModelChange, onGoLive }
         )}
 
         {loading && (
-          <div className="text-center text-ink-500 text-sm py-8">
-            The AI interviewer is reading your resume and drafting questions…
+          <div className="flex flex-col items-center gap-3 text-center py-10">
+            <div className="flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-accent-soft animate-typingDot [animation-delay:0ms]" />
+              <span className="w-2 h-2 rounded-full bg-accent-soft animate-typingDot [animation-delay:150ms]" />
+              <span className="w-2 h-2 rounded-full bg-accent-soft animate-typingDot [animation-delay:300ms]" />
+            </div>
+            <p className="text-ink-300 text-sm">
+              Reading your resume and drafting questions…
+            </p>
+            <p className="text-ink-500 text-xs">
+              This can take up to 30 seconds on the free model — hang tight.
+            </p>
           </div>
         )}
 

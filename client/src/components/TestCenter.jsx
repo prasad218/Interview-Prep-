@@ -3,7 +3,7 @@ import * as api from "../api/client.js";
 import Certificate from "./Certificate.jsx";
 import { ArrowRight, PartyPopper } from "lucide-react";
 
-export default function TestCenter({ user, preselectedCompany, onConsumePreselect }) {
+export default function TestCenter({ user, preselectedCompany, onConsumePreselect, onGoRoadmap }) {
   const [stage, setStage] = useState("select"); // "select" | "quiz" | "result"
   const [mode, setMode] = useState("role");
   const [company, setCompany] = useState(preselectedCompany || "");
@@ -231,12 +231,22 @@ export default function TestCenter({ user, preselectedCompany, onConsumePreselec
                 {result.score}/{result.total} correct
               </p>
             </div>
-            <button
-              onClick={restart}
-              className="rounded-xl border border-base-600 hover:border-accent-dim px-4 py-2 text-sm text-ink-100 transition-colors"
-            >
-              Take another test
-            </button>
+            <div className="flex items-center gap-2">
+              {onGoRoadmap && (
+                <button
+                  onClick={onGoRoadmap}
+                  className="rounded-xl text-sm text-ink-500 hover:text-ink-100 px-3 py-2 transition-colors"
+                >
+                  Back to roadmap
+                </button>
+              )}
+              <button
+                onClick={restart}
+                className="rounded-xl border border-base-600 hover:border-accent-dim px-4 py-2 text-sm text-ink-100 transition-colors"
+              >
+                Take another test
+              </button>
+            </div>
           </div>
 
           <div

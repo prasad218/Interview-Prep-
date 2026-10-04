@@ -67,8 +67,8 @@ router.post("/start", requireAuth, async (req, res) => {
       model,
       messages,
       temperature: 0.7,
-      maxTokens: 3000,
-      retries: 1,
+      maxTokens: 4000,
+      retries: 2,
     });
     const questions = Array.isArray(parsed.questions) ? parsed.questions : [];
     if (questions.length === 0) throw new Error("Model returned no questions.");
