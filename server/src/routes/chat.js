@@ -30,9 +30,16 @@ router.post("/", async (req, res) => {
   };
   await addMessage(conversationId, userMessage);
 
-  // Auto-title new conversations from the first message.
+  // Auto-title new conversations from the first message. A message that
+  // opens with an attached resume would otherwise title the chat with the
+  // first 60 characters of the resume text itself — use a clean label for
+  // that case instead.
   if (convo.messages.length === 0) {
-    const title = content.trim().slice(0, 60);
+    const trimmedContent = content.trim();
+    const attachMatch = trimmedContent.match(/^\[Attached:\s*([^\]]+)\]/);
+    const title = attachMatch
+      ? `Resume review — ${attachMatch[1]}`
+      : trimmedContent.slice(0, 60);
     await renameConversation(conversationId, title || "New chat");
   }
 
@@ -56,11 +63,17 @@ router.post("/", async (req, res) => {
       role: "system",
       content:
         "You are the LevelUp chat assistant, helping a job candidate with " +
-        "interview preparation, career advice, and related questions. Reply " +
-        "directly and conversationally in plain text or markdown. Never " +
-        "include internal classifier, moderation, or safety-check output " +
-        "(e.g. lines like \"User Safety: safe\") in your reply — those are " +
-        "not meant to be shown to the user.",
+        "interview preparation, resume review, career advice, and related " +
+        "questions. When a message includes an attached resume (marked " +
+        "with a line like \"[Attached: filename]\" followed by its text), " +
+        "treat that text as the candidate's current resume: give specific, " +
+        "actionable feedback — weak phrasing, missing metrics, structure, " +
+        "formatting for ATS systems — and offer concrete rewritten lines " +
+        "when helpful, not just general advice. Reply directly and " +
+        "conversationally in plain text or markdown. Never include internal " +
+        "classifier, moderation, or safety-check output (e.g. lines like " +
+        "\"User Safety: safe\") in your reply — those are not meant to be " +
+        "shown to the user.",
     };
     const history = [
       systemMessage,
