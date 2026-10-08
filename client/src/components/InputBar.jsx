@@ -9,6 +9,25 @@ const ACCEPTED_TYPES = [
 ];
 const MAX_FILE_BYTES = 8 * 1024 * 1024; // matches the server's limit
 
+// Sending a resume with an empty message does the work (updates it) rather
+// than just reviewing it. Chips below let the user pick another intent.
+const UPDATE_PROMPT =
+  "Update and polish this resume: strengthen the wording, fix structure and " +
+  "ATS formatting, and give me the complete updated resume.";
+const QUICK_ACTIONS = [
+  { label: "Update my resume", text: UPDATE_PROMPT },
+  {
+    label: "Review only",
+    text: "Review this resume and tell me what to improve — don't rewrite it yet.",
+  },
+  {
+    label: "Tailor to a job",
+    text:
+      "Tailor this resume to the job description below and give me the complete " +
+      "updated resume.\n\nJob description:\n",
+  },
+];
+
 export default function InputBar({ onSend, disabled, placeholder }) {
   const [value, setValue] = useState("");
   // { status: "extracting" | "ready" | "error", name, text?, error? }
@@ -61,10 +80,7 @@ export default function InputBar({ onSend, disabled, placeholder }) {
 
     let content = trimmed;
     if (hasFile) {
-      const instruction =
-        trimmed ||
-        "Please review this resume and suggest specific improvements — " +
-          "phrasing, structure, and anything missing for the roles I'm targeting.";
+      const instruction = trimmed || UPDATE_PROMPT;
       content =
         `[Attached: ${attachment.name}]\n${attachment.text}\n\n---\n\n` + instruction;
     }
@@ -116,6 +132,23 @@ export default function InputBar({ onSend, disabled, placeholder }) {
           </div>
         )}
 
+        {attachment?.status === "ready" && !value.trim() && (
+          <div className="flex flex-wrap gap-2 mb-2">
+            {QUICK_ACTIONS.map((a) => (
+              <button
+                key={a.label}
+                onClick={() => {
+                  setValue(a.text);
+                  ref.current?.focus();
+                }}
+                className="text-xs text-accent-soft border border-accent/30 hover:bg-brand-gradient-soft rounded-full px-3 py-1.5 transition-colors"
+              >
+                {a.label}
+              </button>
+            ))}
+          </div>
+        )}
+
         <div className="flex items-end gap-2 bg-base-800 border border-base-600 focus-within:border-accent focus-within:shadow-glow-sm rounded-2xl px-3 py-2 transition-all">
           <input
             ref={fileInputRef}
@@ -141,7 +174,7 @@ export default function InputBar({ onSend, disabled, placeholder }) {
             disabled={disabled}
             placeholder={
               attachment?.status === "ready"
-                ? "Ask something about it, or just send to get a general review…"
+                ? "Press send to update your resume, or type what you want changed…"
                 : placeholder || "Message..."
             }
             className="flex-1 bg-transparent resize-none outline-none text-[15px] text-ink-100 placeholder:text-ink-500 max-h-[200px] py-1.5 disabled:opacity-50"

@@ -117,6 +117,22 @@ export function addMessage(conversationId, message) {
   });
 }
 
+// Used by "edit message": drops the given message and everything that came
+// after it, so the client can resend an edited version as a fresh message.
+export function truncateMessagesFrom(conversationId, messageId) {
+  return withLock(async () => {
+    const db = await readDb();
+    const convo = db.conversations.find((c) => c.id === conversationId);
+    if (!convo) return null;
+    const idx = convo.messages.findIndex((m) => m.id === messageId);
+    if (idx === -1) return convo;
+    convo.messages = convo.messages.slice(0, idx);
+    convo.updatedAt = new Date().toISOString();
+    await writeDb(db);
+    return convo;
+  });
+}
+
 // ---------------------------------------------------------------- Users
 //
 // Accounts, onboarding profile, generated roadmap, and test result history

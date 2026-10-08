@@ -213,8 +213,16 @@ function MainApp() {
           { conversationId, content, model },
           {
             onToken: (text) => setStreamingText((prev) => (prev ?? "") + text),
-            onDone: (message) => {
-              setMessages((prev) => [...prev, message]);
+            onDone: async (message) => {
+              // Re-sync from the server so the optimistic "local-…" user
+              // message gets its real id (needed to edit it later). If
+              // that fetch fails, fall back to appending the reply.
+              try {
+                const convo = await api.fetchConversation(conversationId);
+                setMessages(convo.messages);
+              } catch {
+                setMessages((prev) => [...prev, message]);
+              }
               setStreamingText(null);
               setStreamingModel(null);
               refreshList();
@@ -233,6 +241,28 @@ function MainApp() {
       }
     },
     [activeId, model, refreshList]
+  );
+
+  // Edit a previously sent message: drop it and everything after it (both
+  // on the server and locally), then resend the edited text as a fresh
+  // message — same flow as a normal send from there.
+  const handleEditMessage = useCallback(
+    async (messageId, newContent) => {
+      if (!activeId) return;
+      setError(null);
+      try {
+        await api.truncateConversation(activeId, messageId);
+      } catch (e) {
+        setError(e.message);
+        return;
+      }
+      setMessages((prev) => {
+        const idx = prev.findIndex((m) => m.id === messageId);
+        return idx === -1 ? prev : prev.slice(0, idx);
+      });
+      handleSend(newContent);
+    },
+    [activeId, handleSend]
   );
 
   const handleGenerateRoadmap = useCallback(async () => {
@@ -356,6 +386,7 @@ function MainApp() {
               messages={messages}
               streamingText={streamingText}
               streamingModel={streamingModel}
+              onEditMessage={handleEditMessage}
             />
             <InputBar onSend={handleSend} disabled={streamingText !== null} />
           </>

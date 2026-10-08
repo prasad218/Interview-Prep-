@@ -6,7 +6,7 @@ const TABS = [
   { key: "interview", label: "Question Bank", short: "Bank" },
   { key: "live", label: "Live Interview", short: "Live", dot: true },
   { key: "test", label: "Test Center", short: "Test" },
-  { key: "chat", label: "Chat", short: "Chat" },
+  { key: "chat", label: "Inbuilt Agentic AI", short: "Agent" },
 ];
 
 export default function Header({

@@ -159,6 +159,16 @@ export async function deleteConversation(id) {
   }
 }
 
+/** Drops `messageId` and everything after it — used when editing a message. */
+export async function truncateConversation(id, messageId) {
+  const res = await fetch(`${BASE}/conversations/${id}/truncate`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ messageId }),
+  });
+  return json(res);
+}
+
 /** Uploads a resume file (PDF/DOCX/TXT) and returns its extracted text. */
 export async function extractResume(file) {
   const form = new FormData();

@@ -6,6 +6,7 @@ import {
   createConversation,
   renameConversation,
   deleteConversation,
+  truncateMessagesFrom,
 } from "../db.js";
 
 const router = Router();
@@ -46,6 +47,18 @@ router.patch("/:id", async (req, res) => {
     return res.status(400).json({ error: "title is required" });
   }
   const convo = await renameConversation(req.params.id, title.trim());
+  if (!convo) return res.status(404).json({ error: "Conversation not found" });
+  res.json(convo);
+});
+
+// POST /api/conversations/:id/truncate  { messageId }
+// Drops the given message and everything after it. Used when the user
+// edits an earlier message: the client calls this, then resends the
+// edited text as a new message so the conversation continues from there.
+router.post("/:id/truncate", async (req, res) => {
+  const { messageId } = req.body || {};
+  if (!messageId) return res.status(400).json({ error: "messageId is required" });
+  const convo = await truncateMessagesFrom(req.params.id, messageId);
   if (!convo) return res.status(404).json({ error: "Conversation not found" });
   res.json(convo);
 });

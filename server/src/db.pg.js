@@ -109,6 +109,23 @@ export async function addMessage(conversationId, message) {
   return convo;
 }
 
+// Used by "edit message": drops the given message and everything that came
+// after it, so the client can resend an edited version as a fresh message.
+export async function truncateMessagesFrom(conversationId, messageId) {
+  const convo = await getConversation(conversationId);
+  if (!convo) return null;
+  const idx = convo.messages.findIndex((m) => m.id === messageId);
+  if (idx === -1) return convo;
+  convo.messages = convo.messages.slice(0, idx);
+  convo.updatedAt = new Date().toISOString();
+  await q(`UPDATE conversations SET data = $2, updated_at = $3 WHERE id = $1`, [
+    conversationId,
+    convo,
+    convo.updatedAt,
+  ]);
+  return convo;
+}
+
 // ---------------------------------------------------------------- Users
 
 export async function findUserByEmail(email) {

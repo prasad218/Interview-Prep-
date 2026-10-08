@@ -25,6 +25,7 @@ export const createConversation = impl.createConversation;
 export const renameConversation = impl.renameConversation;
 export const deleteConversation = impl.deleteConversation;
 export const addMessage = impl.addMessage;
+export const truncateMessagesFrom = impl.truncateMessagesFrom;
 export const findUserByEmail = impl.findUserByEmail;
 export const findUserByLoginCode = impl.findUserByLoginCode;
 export const findUserById = impl.findUserById;
