@@ -1,12 +1,12 @@
 import logo from "../assets/logo.png";
 import { useAuth } from "../context/AuthContext.jsx";
-import { ArrowLeft, Zap, Map } from "lucide-react";
+import { ArrowLeft, Zap, Map, Sparkles } from "lucide-react";
 
-export default function PracticeChoice({ onQuickPractice, onBuildRoadmap }) {
+export default function PracticeChoice({ onQuickPractice, onBuildRoadmap, onOpenAgent }) {
   const { logout } = useAuth();
 
   return (
-    <div className="h-screen w-screen relative flex flex-col items-center justify-center text-center px-6 overflow-hidden bg-base-950">
+    <div className="min-h-screen w-screen relative flex flex-col items-center justify-center text-center px-6 py-20 overflow-hidden bg-base-950">
       <div className="absolute inset-0 bg-aurora pointer-events-none" />
 
       <button
@@ -26,8 +26,8 @@ export default function PracticeChoice({ onQuickPractice, onBuildRoadmap }) {
           How do you want to start?
         </h1>
         <p className="text-ink-500 text-sm max-w-sm mb-8 leading-relaxed">
-          Jump straight into practice questions, or tell us about your target
-          role so we can build you a full day-by-day prep roadmap.
+          Jump into practice questions, build a day-by-day prep roadmap for
+          your target role, or let our AI update your resume.
         </p>
 
         <div className="w-full flex flex-col gap-4">
@@ -69,6 +69,33 @@ export default function PracticeChoice({ onQuickPractice, onBuildRoadmap }) {
               </span>
             </span>
           </button>
+
+          {onOpenAgent && (
+            <button
+              onClick={onOpenAgent}
+              className="w-full text-left rounded-2xl border border-accent/30 bg-brand-gradient-soft hover:border-accent/60 hover:bg-base-800 transition-colors px-5 py-4"
+            >
+              <span className="flex items-center gap-3">
+                <span className="w-10 h-10 shrink-0 rounded-xl bg-base-900 border border-accent/40 flex items-center justify-center">
+                  <Sparkles className="w-[18px] h-[18px] text-accent-soft" strokeWidth={2.25} />
+                </span>
+                <span className="flex-1 min-w-0">
+                  <span className="flex items-center flex-wrap gap-x-2 gap-y-1 mb-0.5">
+                    <span className="font-display font-semibold text-ink-100 text-sm">
+                      Update your resume
+                    </span>
+                    <span className="text-[10px] font-semibold text-accent-soft border border-accent/40 rounded-full px-2 py-0.5">
+                      Inbuilt Agentic AI
+                    </span>
+                  </span>
+                  <span className="block text-xs text-ink-500 leading-relaxed">
+                    Say what you want changed and it rewrites your resume, then
+                    gives you a Word or PDF file to download.
+                  </span>
+                </span>
+              </span>
+            </button>
+          )}
         </div>
 
         <div className="brand-badge mt-8">

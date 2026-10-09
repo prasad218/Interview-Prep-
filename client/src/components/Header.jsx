@@ -1,5 +1,5 @@
 import ModelSelector from "./ModelSelector.jsx";
-import { Menu } from "lucide-react";
+import { Menu, ArrowLeft } from "lucide-react";
 
 const TABS = [
   { key: "roadmap", label: "Roadmap", short: "Roadmap" },
@@ -19,10 +19,20 @@ export default function Header({
   showModelSelector,
   view,
   onViewChange,
+  onBack,
 }) {
   return (
     <header className="shrink-0 flex flex-wrap items-center justify-between gap-x-3 gap-y-2 px-3 sm:px-4 py-2 md:h-14 md:py-0 border-b border-base-700 glass-panel">
       <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+        {onBack && (
+          <button
+            onClick={onBack}
+            className="shrink-0 flex items-center gap-1 text-xs text-ink-300 hover:text-ink-100 border border-base-600 hover:border-base-500 rounded-lg px-2.5 py-1.5 transition-colors"
+          >
+            <ArrowLeft className="w-3.5 h-3.5" strokeWidth={2} />
+            <span className="hidden sm:inline">Back</span>
+          </button>
+        )}
         <button
           onClick={onToggleSidebar}
           className="text-ink-300 hover:text-ink-100 w-8 h-8 flex items-center justify-center rounded-lg hover:bg-base-800 transition-colors shrink-0"

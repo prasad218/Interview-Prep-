@@ -1,5 +1,5 @@
 import { useCallback, useRef, useState } from "react";
-import { X, Map, ArrowLeft, ArrowRight, Check } from "lucide-react";
+import { X, Map, ArrowLeft, ArrowRight, Check, Sparkles } from "lucide-react";
 import * as api from "../api/client.js";
 import { useAuth } from "../context/AuthContext.jsx";
 
@@ -56,7 +56,7 @@ function CompanyChips({ companies, setCompanies }) {
   );
 }
 
-export default function OnboardingWizard({ onDone, initialProfile, onCancel }) {
+export default function OnboardingWizard({ onDone, initialProfile, onCancel, onOpenAgent }) {
   const { setUser } = useAuth();
   const fileInputRef = useRef(null);
 
@@ -172,6 +172,17 @@ export default function OnboardingWizard({ onDone, initialProfile, onCancel }) {
               ? "Changing these will regenerate your roadmap."
               : "A few details and we'll generate a personalized, day-by-day plan."}
           </p>
+          {onOpenAgent && (
+            <button
+              type="button"
+              onClick={onOpenAgent}
+              className="mt-3 inline-flex items-center gap-1.5 text-xs text-accent-soft hover:text-ink-100 transition-colors"
+            >
+              <Sparkles className="w-3.5 h-3.5" strokeWidth={2.25} />
+              Just want your resume updated? Use the Inbuilt Agentic AI
+              <ArrowRight className="w-3.5 h-3.5" strokeWidth={2} />
+            </button>
+          )}
         </div>
 
         <form

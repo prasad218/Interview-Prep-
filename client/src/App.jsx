@@ -61,10 +61,16 @@ function GenerateRoadmapPrompt({ onGenerate, generating, error }) {
 
 const RESUMABLE_VIEWS = ["roadmap", "test", "interview", "live", "chat"];
 
-function MainApp() {
+// `agentOnly` is for someone who hasn't built a roadmap yet but chose "Update
+// your resume" on the start screen: they get just the Inbuilt Agentic AI
+// chat (the other tabs need a profile), with a Back button to the start
+// screen. Their screen isn't saved as a "last location", so building a
+// roadmap later doesn't land them back in the chat.
+function MainApp({ agentOnly = false, onExitAgent }) {
   const { user, setUser, logout } = useAuth();
   const [editingProfile, setEditingProfile] = useState(false);
   const [view, setView] = useState(() => {
+    if (agentOnly) return "chat";
     const savedView = user?.lastLocation?.view;
     return RESUMABLE_VIEWS.includes(savedView) ? savedView : "roadmap";
   }); // "roadmap" | "test" | "interview" | "live" | "chat"
@@ -119,6 +125,7 @@ function MainApp() {
       skipFirstPersist.current = false;
       return;
     }
+    if (agentOnly) return;
     api
       .updateLocation({ view, activeId: view === "chat" ? activeId : null })
       .catch(() => {});
@@ -321,7 +328,9 @@ function MainApp() {
       <div className="flex-1 flex flex-col min-w-0">
         <Header
           title={
-            titleByView[view] || activeConversation?.title || "LevelUp"
+            titleByView[view] ||
+            activeConversation?.title ||
+            (agentOnly ? "Update your resume" : "LevelUp")
           }
           sidebarOpen={sidebarOpen}
           onToggleSidebar={() => setSidebarOpen((v) => !v)}
@@ -330,10 +339,15 @@ function MainApp() {
           onModelChange={setModel}
           showModelSelector={false}
           view={view}
-          onViewChange={(v) => {
-            setError(null);
-            setView(v);
-          }}
+          onViewChange={
+            agentOnly
+              ? undefined
+              : (v) => {
+                  setError(null);
+                  setView(v);
+                }
+          }
+          onBack={agentOnly ? onExitAgent : undefined}
         />
 
         {error && view === "chat" && (
@@ -407,7 +421,7 @@ function MainApp() {
 
 export default function App() {
   const { user, checkingSession } = useAuth();
-  const [entryChoice, setEntryChoice] = useState(null); // null | "quick" | "roadmap"
+  const [entryChoice, setEntryChoice] = useState(null); // null | "quick" | "roadmap" | "agent"
   const [showAdmin, setShowAdmin] = useState(false);
 
   // Admin is a separate, non-candidate view gated by a shared secret (not
@@ -420,10 +434,14 @@ export default function App() {
   if (!user) return <AuthScreen onAdminLogin={() => setShowAdmin(true)} />;
 
   if (!user.profile) {
+    if (entryChoice === "agent") {
+      return <MainApp agentOnly onExitAgent={() => setEntryChoice(null)} />;
+    }
     if (entryChoice === "quick") {
       return (
         <QuickPractice
           onBuildRoadmap={() => setEntryChoice("roadmap")}
+          onOpenAgent={() => setEntryChoice("agent")}
           onBack={() => setEntryChoice(null)}
         />
       );
@@ -433,13 +451,18 @@ export default function App() {
       // it saves the profile + roadmap, so App re-renders into MainApp
       // automatically — no reload needed.
       return (
-        <OnboardingWizard onDone={() => {}} onCancel={() => setEntryChoice(null)} />
+        <OnboardingWizard
+          onDone={() => {}}
+          onCancel={() => setEntryChoice(null)}
+          onOpenAgent={() => setEntryChoice("agent")}
+        />
       );
     }
     return (
       <PracticeChoice
         onQuickPractice={() => setEntryChoice("quick")}
         onBuildRoadmap={() => setEntryChoice("roadmap")}
+        onOpenAgent={() => setEntryChoice("agent")}
       />
     );
   }

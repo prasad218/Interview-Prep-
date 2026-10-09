@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
-import { ArrowLeft, ArrowRight } from "lucide-react";
+import { ArrowLeft, ArrowRight, Sparkles } from "lucide-react";
 import * as api from "../api/client.js";
 import InterviewPrep from "./InterviewPrep.jsx";
 import LiveInterview from "./LiveInterview.jsx";  
 import logo from "../assets/logo.png";
 
-export default function QuickPractice({ onBuildRoadmap, onBack }) {
+export default function QuickPractice({ onBuildRoadmap, onBack, onOpenAgent }) {
   const [mode, setMode] = useState("interview"); // "interview" | "live"
   const [model, setModel] = useState("openrouter/free");
   const [models, setModels] = useState([
@@ -60,6 +60,18 @@ export default function QuickPractice({ onBuildRoadmap, onBack }) {
               Live mock interview
             </button>
           </div>
+
+          {onOpenAgent && (
+            <button
+              onClick={onOpenAgent}
+              title="Update your resume — Inbuilt Agentic AI"
+              aria-label="Update your resume with the Inbuilt Agentic AI"
+              className="flex items-center gap-1.5 rounded-lg border border-accent/30 bg-brand-gradient-soft hover:border-accent/60 transition-colors text-accent-soft text-xs font-medium px-2.5 sm:px-3 py-1.5"
+            >
+              <Sparkles className="w-3.5 h-3.5" strokeWidth={2.25} />
+              <span className="hidden sm:inline">Update resume</span>
+            </button>
+          )}
 
           <button
             onClick={onBuildRoadmap}
