@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { nanoid } from "nanoid";
+import { requireAuth } from "../auth.js";
 import { getConversation, addMessage, renameConversation } from "../db.js";
 import { streamChatCompletion } from "../openrouter.js";
 
@@ -10,15 +11,18 @@ const router = Router();
 //   event: token   data: {"text": "..."}       (repeated)
 //   event: done    data: {"message": {...}}
 //   event: error   data: {"message": "..."}
-router.post("/", async (req, res) => {
+router.post("/", requireAuth, async (req, res) => {
   const { conversationId, content, model } = req.body || {};
 
   if (!conversationId || !content?.trim()) {
     return res.status(400).json({ error: "conversationId and content are required" });
   }
 
+  // Only the owner can chat in a conversation; anyone else gets "not found".
   const convo = await getConversation(conversationId);
-  if (!convo) return res.status(404).json({ error: "Conversation not found" });
+  if (!convo || convo.userId !== req.user.id) {
+    return res.status(404).json({ error: "Conversation not found" });
+  }
 
   const useModel = model || convo.model;
 

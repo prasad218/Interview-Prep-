@@ -124,19 +124,19 @@ export async function fetchModels() {
 }
 
 export async function fetchConversations() {
-  const res = await fetch(`${BASE}/conversations`);
+  const res = await fetch(`${BASE}/conversations`, { headers: authHeaders() });
   return json(res);
 }
 
 export async function fetchConversation(id) {
-  const res = await fetch(`${BASE}/conversations/${id}`);
+  const res = await fetch(`${BASE}/conversations/${id}`, { headers: authHeaders() });
   return json(res);
 }
 
 export async function createConversation(model) {
   const res = await fetch(`${BASE}/conversations`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: authHeaders({ "Content-Type": "application/json" }),
     body: JSON.stringify({ model }),
   });
   return json(res);
@@ -145,14 +145,17 @@ export async function createConversation(model) {
 export async function renameConversation(id, title) {
   const res = await fetch(`${BASE}/conversations/${id}`, {
     method: "PATCH",
-    headers: { "Content-Type": "application/json" },
+    headers: authHeaders({ "Content-Type": "application/json" }),
     body: JSON.stringify({ title }),
   });
   return json(res);
 }
 
 export async function deleteConversation(id) {
-  const res = await fetch(`${BASE}/conversations/${id}`, { method: "DELETE" });
+  const res = await fetch(`${BASE}/conversations/${id}`, {
+    method: "DELETE",
+    headers: authHeaders(),
+  });
   if (!res.ok && res.status !== 204) {
     const body = await res.json().catch(() => ({}));
     throw new Error(body.error || `Request failed (${res.status})`);
@@ -163,7 +166,7 @@ export async function deleteConversation(id) {
 export async function truncateConversation(id, messageId) {
   const res = await fetch(`${BASE}/conversations/${id}/truncate`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: authHeaders({ "Content-Type": "application/json" }),
     body: JSON.stringify({ messageId }),
   });
   return json(res);
@@ -285,7 +288,7 @@ export async function endLiveInterview(sessionId) {
 export async function sendMessageStream({ conversationId, content, model }, callbacks) {
   const res = await fetch(`${BASE}/chat`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: authHeaders({ "Content-Type": "application/json" }),
     body: JSON.stringify({ conversationId, content, model }),
   });
 

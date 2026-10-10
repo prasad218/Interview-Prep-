@@ -52,10 +52,13 @@ async function writeDb(data) {
   await writeFile(DB_FILE, JSON.stringify(data, null, 2));
 }
 
-export function listConversations() {
+// Only ever lists the given user's chats — never "all" chats.
+export function listConversations(userId) {
   return withLock(async () => {
+    if (!userId) return [];
     const db = await readDb();
     return db.conversations
+      .filter((c) => c.userId === userId)
       .map(({ id, title, model, createdAt, updatedAt }) => ({
         id,
         title,
@@ -76,6 +79,9 @@ export function getConversation(id) {
 
 export function createConversation(conversation) {
   return withLock(async () => {
+    if (!conversation.userId) {
+      throw new Error("A conversation must belong to a user.");
+    }
     const db = await readDb();
     db.conversations.push(conversation);
     await writeDb(db);

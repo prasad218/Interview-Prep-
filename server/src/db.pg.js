@@ -32,9 +32,16 @@ function init() {
       );
       CREATE TABLE IF NOT EXISTS conversations (
         id TEXT PRIMARY KEY,
+        user_id TEXT,
         updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
         data JSONB NOT NULL
       );
+      -- Upgrade path for databases created before chats belonged to an
+      -- account. Old rows keep user_id = NULL, so they belong to nobody and
+      -- are never shown to anyone.
+      ALTER TABLE conversations ADD COLUMN IF NOT EXISTS user_id TEXT;
+      CREATE INDEX IF NOT EXISTS conversations_user_idx
+        ON conversations (user_id, updated_at DESC);
       CREATE TABLE IF NOT EXISTS redemption_codes (
         code TEXT PRIMARY KEY,
         created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
@@ -52,9 +59,12 @@ async function q(text, params) {
 
 // ---------------------------------------------------------- Conversations
 
-export async function listConversations() {
+// Only ever lists the given user's chats — never "all" chats.
+export async function listConversations(userId) {
+  if (!userId) return [];
   const { rows } = await q(
-    `SELECT data FROM conversations ORDER BY updated_at DESC`
+    `SELECT data FROM conversations WHERE user_id = $1 ORDER BY updated_at DESC`,
+    [userId]
   );
   return rows.map(({ data }) => ({
     id: data.id,
@@ -71,9 +81,17 @@ export async function getConversation(id) {
 }
 
 export async function createConversation(conversation) {
+  if (!conversation.userId) {
+    throw new Error("A conversation must belong to a user.");
+  }
   await q(
-    `INSERT INTO conversations (id, updated_at, data) VALUES ($1, $2, $3)`,
-    [conversation.id, conversation.updatedAt || new Date().toISOString(), conversation]
+    `INSERT INTO conversations (id, user_id, updated_at, data) VALUES ($1, $2, $3, $4)`,
+    [
+      conversation.id,
+      conversation.userId,
+      conversation.updatedAt || new Date().toISOString(),
+      conversation,
+    ]
   );
   return conversation;
 }
