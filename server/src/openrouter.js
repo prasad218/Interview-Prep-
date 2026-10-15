@@ -3,6 +3,32 @@
 
 import { parseModelJSON } from "./lib/modelJson.js";
 
+/**
+ * Turns a failed OpenRouter response into an error with a message that is safe
+ * and understandable to show a user. The raw details (which can be long,
+ * technical provider errors) go to the server log for the owner instead.
+ * `noRetry` marks failures where asking again straight away can't help and
+ * would only burn more of the daily free quota.
+ */
+function upstreamError(status, errText, statusText) {
+  console.error(`[openrouter] ${status}: ${(errText || statusText || "").slice(0, 400)}`);
+  let err;
+  if (status === 429) {
+    err = new Error(
+      "The AI is at its usage limit right now. Please try again in a little while."
+    );
+    err.rateLimited = true;
+    err.noRetry = true;
+  } else if (status >= 500) {
+    err = new Error("The AI service is having trouble right now. Please try again.");
+  } else {
+    err = new Error("The AI service is unavailable right now. Please try again later.");
+    err.noRetry = true;
+  }
+  err.status = status;
+  return err;
+}
+
 const OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
 const MODELS_URL = "https://openrouter.ai/api/v1/models";
 
@@ -41,9 +67,7 @@ export async function streamChatCompletion({ model, messages, onToken, signal })
 
   if (!res.ok || !res.body) {
     const errText = await res.text().catch(() => "");
-    throw new Error(
-      `OpenRouter request failed (${res.status}): ${errText || res.statusText}`
-    );
+    throw upstreamError(res.status, errText, res.statusText);
   }
 
   const reader = res.body.getReader();
@@ -106,9 +130,7 @@ export async function chatCompletion({ model, messages, temperature, jsonMode, m
 
   if (!res.ok) {
     const errText = await res.text().catch(() => "");
-    throw new Error(
-      `OpenRouter request failed (${res.status}): ${errText || res.statusText}`
-    );
+    throw upstreamError(res.status, errText, res.statusText);
   }
 
   const data = await res.json();
@@ -169,7 +191,7 @@ export async function chatCompletionJSON({
       return parseModelJSON(raw);
     } catch (err) {
       lastError = err;
-      if (attempt === retries) break;
+      if (attempt === retries || err.noRetry) break;
       // Ask again, more insistently, and give the model back whatever it
       // produced last time so it can pick up where it left off rather than
       // starting from scratch (helps most when the issue was truncation).

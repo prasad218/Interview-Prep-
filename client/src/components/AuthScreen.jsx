@@ -347,6 +347,11 @@ export default function AuthScreen({ onAdminLogin }) {
             issued here reflect practice performance and aren't official
             credentials from any company.
           </p>
+          <p className="text-[11px] text-ink-500 text-center mt-2">
+            What you type or upload here, such as your resume, is sent to
+            third-party AI services to generate your results. Avoid including
+            ID numbers or passwords.
+          </p>
 
           {onAdminLogin && (
             <button

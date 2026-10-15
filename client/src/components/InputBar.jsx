@@ -192,6 +192,10 @@ export default function InputBar({ onSend, disabled, placeholder }) {
       <p className="text-center text-[11px] text-ink-500 mt-2">
         Enter to send · Shift + Enter for a new line · attach your resume to get it reviewed
       </p>
+      <p className="text-center text-[11px] text-ink-500/70 mt-1">
+        Your chats are private to your account. Attached resumes are sent to
+        third-party AI services to write replies.
+      </p>
     </div>
   );
 }

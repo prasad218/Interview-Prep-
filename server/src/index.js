@@ -11,16 +11,53 @@ import roadmapRouter from "./routes/roadmap.js";
 import testRouter from "./routes/test.js";
 import adminRouter from "./routes/admin.js";
 import redeemRouter from "./routes/redeem.js";
+import {
+  generalLimiter,
+  aiUserLimiter,
+  aiIpLimiter,
+  loginLimiter,
+  loginIpLimiter,
+  signupLimiter,
+  failureLimiter,
+} from "./rateLimits.js";
 
 const app = express();
 const PORT = process.env.PORT || 3001;
 
+// The host puts a proxy in front of the app, so the visitor's real address
+// comes from the X-Forwarded-For header. This is how many proxy hops to
+// trust. 1 is right for most hosts; if the "ip" shown at /api/health is NOT
+// your own public IP, change TRUST_PROXY_HOPS in the host's environment
+// settings (try 2, then 3) — no code change needed.
+app.set("trust proxy", parseInt(process.env.TRUST_PROXY_HOPS, 10) || 1);
+
 app.use(cors());
 app.use(express.json({ limit: "2mb" }));
 
+// "ip" lets you confirm the proxy setting above: it should be YOUR public IP.
 app.get("/api/health", (req, res) => {
-  res.json({ ok: true, hasApiKey: Boolean(process.env.OPENROUTER_API_KEY) });
+  res.json({
+    ok: true,
+    hasApiKey: Boolean(process.env.OPENROUTER_API_KEY),
+    ip: req.ip,
+  });
 });
+
+app.use("/api", generalLimiter);
+
+// Sign-in and account creation.
+app.use("/api/auth/login", loginLimiter, loginIpLimiter);
+app.use("/api/auth/signup", signupLimiter);
+app.use("/api/admin", failureLimiter); // wrong admin secrets/passwords
+app.use("/api/redeem", failureLimiter); // wrong redemption codes
+
+// Everything that calls the AI model.
+const ai = [aiUserLimiter, aiIpLimiter];
+app.use("/api/chat", ...ai);
+app.use("/api/interview/generate", ...ai);
+app.use("/api/live-interview", ...ai);
+app.use("/api/roadmap/generate", ...ai);
+app.use("/api/test/start", ...ai);
 
 app.use("/api/conversations", conversationsRouter);
 app.use("/api/chat", chatRouter);
