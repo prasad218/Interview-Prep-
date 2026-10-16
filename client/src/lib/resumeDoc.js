@@ -55,6 +55,88 @@ function inlineRuns(line) {
   return runs.length ? runs : [{ text: line, bold: false }];
 }
 
+// ---------------------------------------------------------------- Text hygiene
+//
+// The AI (and resumes pasted from Word/PDF) often contain typographic
+// characters such as non-breaking hyphens, special bullets, zero-width
+// spaces and ₹. The PDF's built-in font can only draw Latin text; if even ONE
+// other character reaches it, the PDF library re-encodes the whole run with
+// blank bytes between letters, which Chrome and others show as stretched,
+// overflowing text. So text is cleaned before it is drawn.
+
+// Safe to do for every output (Word and PDF): fix characters that are
+// invisible, awkward, or have a plain-text equivalent.
+export function normalizeBase(text) {
+  return text
+    .replace(/\r\n?/g, "\n")
+    .replace(/[\u2028\u2029]/g, "\n")
+    .replace(/\t/g, " ")
+    .replace(/[\u2010-\u2012\u2015\u2043\u2212\uFE58\uFE63\uFF0D]/g, "-") // hyphen look-alikes (not en/em dash)
+    .replace(/[\u00AD\u200B-\u200D\u2060\uFEFF]/g, "") // soft hyphen, zero-width
+    .replace(/[\u00A0\u2000-\u200A\u202F\u205F\u3000]/g, " ") // odd spaces
+    .replace(/[\uE000-\uF8FF]/g, "\u2022"); // private-use bullets from Word/PDF exports
+}
+
+// Extra substitutions only the PDF needs (Word can show these fine).
+const PDF_MAP = {
+  "\u2192": "->", "\u2190": "<-", "\u21D2": "=>",
+  "\u2264": "<=", "\u2265": ">=", "\u2260": "!=", "\u2248": "~",
+  "\u20B9": "Rs.",
+  "\u2713": "", "\u2714": "", "\u2705": "",
+  "\u25CF": "\u2022", "\u25CB": "\u2022", "\u25A0": "\u2022", "\u25AA": "\u2022",
+  "\u25AB": "\u2022", "\u25E6": "\u2022", "\u2023": "\u2022", "\u2219": "\u2022",
+  "\u2032": "'", "\u2033": '"', "\u201B": "'", "\u201F": '"',
+  "\u2044": "/", "\u2215": "/",
+};
+
+// Characters the PDF's standard font (Helvetica, WinAnsi) can draw besides
+// plain ASCII and Latin-1.
+const WIN_ANSI_EXTRA = new Set(
+  "\u20AC\u201A\u0192\u201E\u2026\u2020\u2021\u02C6\u2030\u0160\u2039\u0152\u017D" +
+    "\u2018\u2019\u201C\u201D\u2022\u2013\u2014\u02DC\u2122\u0161\u203A\u0153\u017E\u0178"
+);
+function pdfCanDraw(ch) {
+  const c = ch.codePointAt(0);
+  return ch === "\n" || (c >= 0x20 && c <= 0x7e) || (c >= 0xa0 && c <= 0xff) || WIN_ANSI_EXTRA.has(ch);
+}
+
+function toPdfSafe(text) {
+  const lost = [];
+  let out = "";
+  let lastWasPlaceholder = false;
+  for (let ch of normalizeBase(text)) {
+    if (PDF_MAP[ch] !== undefined) ch = PDF_MAP[ch];
+    for (const c of ch) {
+      if (pdfCanDraw(c)) {
+        out += c;
+        lastWasPlaceholder = false;
+        continue;
+      }
+      // Try dropping accents (e.g. "ō" -> "o") before giving up.
+      const plain = c.normalize("NFKD").replace(/[\u0300-\u036f]/g, "");
+      if (plain && [...plain].every(pdfCanDraw)) {
+        out += plain;
+        lastWasPlaceholder = false;
+        continue;
+      }
+      if (!lost.includes(c)) lost.push(c);
+      if (!lastWasPlaceholder) out += "?";
+      lastWasPlaceholder = true;
+    }
+  }
+  return { text: out, lost };
+}
+
+/** Text with every character the PDF font can't draw replaced (for the PDF). */
+export function pdfSafe(text) {
+  return toPdfSafe(text).text;
+}
+
+/** Characters the PDF will have to replace with "?" (e.g. other scripts, emoji). */
+export function unsupportedForPdf(text) {
+  return toPdfSafe(text).lost.slice(0, 8);
+}
+
 const stripMd = (s) => s.replace(/\*\*(.+?)\*\*/g, "$1").replace(/`/g, "");
 
 /**
@@ -133,7 +215,7 @@ export async function buildDocx(text) {
   } = await import("docx");
 
   const FONT = "Calibri";
-  const blocks = parseResume(text);
+  const blocks = parseResume(normalizeBase(text));
   const children = [];
 
   for (const b of blocks) {
@@ -300,7 +382,7 @@ export async function buildPdf(text) {
     }
   };
 
-  for (const b of parseResume(text)) {
+  for (const b of parseResume(pdfSafe(text))) {
     if (b.type === "name") {
       ensure(30);
       doc.setFont("helvetica", "bold");

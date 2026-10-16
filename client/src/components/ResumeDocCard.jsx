@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { FileText, Download, Copy, Check, Loader2 } from "lucide-react";
 import {
   buildDocx,
@@ -6,6 +6,7 @@ import {
   downloadBlob,
   fileBaseName,
   resumeTitle,
+  unsupportedForPdf,
 } from "../lib/resumeDoc.js";
 
 /** Placeholder shown while the model is still writing the resume block. */
@@ -33,6 +34,9 @@ export default function ResumeDocCard({ text }) {
   const [copied, setCopied] = useState(false);
 
   const base = fileBaseName(text);
+  // Characters (other alphabets, emoji) the PDF's font can't draw. The Word
+  // file keeps them, so tell the user instead of silently changing them.
+  const pdfLost = useMemo(() => unsupportedForPdf(text), [text]);
 
   const download = async (kind) => {
     if (busy) return;
@@ -110,6 +114,12 @@ export default function ResumeDocCard({ text }) {
           )}
           {copied ? "Copied" : "Copy text"}
         </button>
+        {pdfLost.length > 0 && (
+          <p className="w-full text-[11px] text-signal-amber">
+            The PDF can't show some characters ({pdfLost.join(" ")}) and
+            replaces them with "?". The Word file keeps them.
+          </p>
+        )}
         {error && <p className="w-full text-xs text-signal-rose">{error}</p>}
       </div>
     </div>
