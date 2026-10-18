@@ -70,7 +70,7 @@ app.use("/api/test", testRouter);
 app.use("/api/admin", adminRouter);
 app.use("/api/redeem", redeemRouter);
 
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   if (!process.env.OPENROUTER_API_KEY) {
     console.warn(
       "\n⚠️  OPENROUTER_API_KEY is not set. Copy server/.env.example to server/.env and add your key.\n" +
@@ -79,3 +79,8 @@ app.listen(PORT, () => {
   }
   console.log(`Server running at http://localhost:${PORT}`);
 });
+// Render's proxy reuses connections for up to ~2 minutes, but Node closes idle
+// ones after 5 seconds by default, which causes occasional random 502 errors.
+server.keepAliveTimeout = 120 * 1000;
+server.headersTimeout = 121 * 1000;
+

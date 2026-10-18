@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { nanoid } from "nanoid";
 import { requireAuth } from "../auth.js";
+import { getModel } from "../config/model.js";
 import {
   listConversations,
   getConversation,
@@ -45,13 +46,12 @@ router.get("/:id", async (req, res) => {
 
 // POST /api/conversations — create a new empty conversation
 router.post("/", async (req, res) => {
-  const { model } = req.body || {};
   const now = new Date().toISOString();
   const convo = {
     id: nanoid(),
     userId: req.user.id,
     title: "New chat",
-    model: model || process.env.DEFAULT_MODEL || "openrouter/free",
+    model: getModel(),
     messages: [],
     createdAt: now,
     updatedAt: now,

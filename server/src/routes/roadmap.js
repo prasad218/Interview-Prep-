@@ -2,6 +2,7 @@ import { Router } from "express";
 import * as db from "../db.js";
 import { requireAuth } from "../auth.js";
 import { chatCompletionJSON } from "../openrouter.js";
+import { getModel } from "../config/model.js";
 
 const router = Router();
 
@@ -75,13 +76,12 @@ router.post("/generate", requireAuth, async (req, res) => {
       },
       { role: "user", content: buildPrompt(user.profile) },
     ];
-    const model =
-      req.body?.model || process.env.DEFAULT_MODEL || "openrouter/free";
+    const model = getModel();
     const parsed = await chatCompletionJSON({
       model,
       messages,
       temperature: 0.6,
-      maxTokens: 4500,
+      maxTokens: 6500,
       retries: 2,
     });
 

@@ -181,7 +181,8 @@ export default function InterviewPrep({ models, model, onModelChange, onGoLive }
               Reading your resume and drafting questions…
             </p>
             <p className="text-ink-500 text-xs">
-              This can take up to 30 seconds on the free model — hang tight.
+              Usually under a minute, but the free AI can be slow when it's busy
+              (sometimes a couple of minutes). Please keep this page open.
             </p>
           </div>
         )}

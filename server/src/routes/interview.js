@@ -1,6 +1,7 @@
 import { Router } from "express";
 import multer from "multer";
 import { chatCompletionJSON } from "../openrouter.js";
+import { getModel } from "../config/model.js";
 
 const router = Router();
 
@@ -107,7 +108,7 @@ function buildPrompt({ resumeText, role, experience, numQuestions, focusAreas })
         `{"questions": [{"category": one of ${JSON.stringify(
           CATEGORY_LIST
         )}, "difficulty": "Easy"|"Medium"|"Hard", "question": string, ` +
-        `"idealAnswer": string (4-8 sentences, specific and technically correct), ` +
+        `"idealAnswer": string (3-4 sentences, specific and technically correct), ` +
         `"followUp": string (one likely interviewer follow-up question)}]}`,
     },
   ];
@@ -137,14 +138,13 @@ router.post("/generate", async (req, res) => {
     experience,
     numQuestions = 10,
     focusAreas = [],
-    model,
   } = req.body || {};
 
   if (!resumeText || !resumeText.trim()) {
     return res.status(400).json({ error: "resumeText is required." });
   }
 
-  const useModel = model || process.env.DEFAULT_MODEL || "openrouter/free";
+  const useModel = getModel();
   const clampedCount = Math.max(3, Math.min(20, Number(numQuestions) || 10));
 
   try {
@@ -160,7 +160,7 @@ router.post("/generate", async (req, res) => {
       model: useModel,
       messages,
       temperature: 0.6,
-      maxTokens: Math.min(8000, 400 * clampedCount + 800),
+      maxTokens: Math.min(12000, 450 * clampedCount + 1500),
       retries: 2,
     });
 

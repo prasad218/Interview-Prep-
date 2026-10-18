@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { nanoid } from "nanoid";
 import { chatCompletionJSON } from "../openrouter.js";
+import { getModel } from "../config/model.js";
 import { requireAuth } from "../auth.js";
 import * as db from "../db.js";
 import {
@@ -110,8 +111,10 @@ async function askFirstQuestion(session) {
     model: session.model,
     messages,
     temperature: 0.7,
-    maxTokens: 600,
+    maxTokens: 1200,
     retries: 1,
+    timeoutMs: 45000,
+    budgetMs: 90000,
   });
   return {
     question:
@@ -156,8 +159,10 @@ async function askNextOrFinish(session) {
     model: session.model,
     messages,
     temperature: 0.65,
-    maxTokens: 1500,
+    maxTokens: 2500,
     retries: 1,
+    timeoutMs: 45000,
+    budgetMs: 90000,
   });
 }
 
@@ -186,14 +191,13 @@ router.post("/start", requireAuth, async (req, res) => {
     experience,
     numQuestions = 8,
     focusAreas = [],
-    model,
   } = req.body || {};
 
   if (!resumeText || !resumeText.trim()) {
     return res.status(400).json({ error: "resumeText is required." });
   }
 
-  const useModel = model || process.env.DEFAULT_MODEL || "openrouter/free";
+  const useModel = getModel();
   const clampedCount = Math.max(3, Math.min(15, Number(numQuestions) || 8));
   const areas = focusAreas.length ? focusAreas : CATEGORY_LIST;
 
@@ -353,8 +357,10 @@ router.post("/end", async (req, res) => {
       model: session.model,
       messages,
       temperature: 0.5,
-      maxTokens: 1500,
+      maxTokens: 2500,
       retries: 1,
+      timeoutMs: 45000,
+      budgetMs: 90000,
     });
     session.done = true;
     session.report = report;
