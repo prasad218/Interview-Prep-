@@ -85,6 +85,44 @@ function transcriptSummary(session) {
     .join("\n\n");
 }
 
+
+const RATING_LEVELS = ["Weak", "Average", "Good", "Excellent"];
+
+function normalizeRating(value) {
+  if (typeof value === "number") {
+    // 1-5 or 1-10 style numeric ratings -> nearest level
+    const ratio = value > 5 ? value / 10 : value / 5;
+    return RATING_LEVELS[Math.min(3, Math.max(0, Math.ceil(ratio * 4) - 1))];
+  }
+  if (typeof value !== "string") return null;
+  const v = value.trim().toLowerCase();
+  if (!v) return null;
+  if (/excellent|outstanding|strong|great/.test(v)) return "Excellent";
+  if (/good|solid|clear|fast/.test(v)) return "Good";
+  if (/average|avg|ok|okay|moderate|fair|medium/.test(v)) return "Average";
+  if (/weak|poor|low|bad|slow|needs/.test(v)) return "Weak";
+  return null;
+}
+
+/** Models vary key names/casing ("technical_depth", "Technical Depth") and
+ * rating wording. Map everything onto the 4 keys + 4 levels the UI expects. */
+function normalizeFeedback(raw) {
+  const src = raw && typeof raw === "object" ? raw : {};
+  const byKey = {};
+  for (const [k, v] of Object.entries(src)) {
+    byKey[k.toLowerCase().replace(/[^a-z]/g, "")] = v;
+  }
+  const out = {
+    clarity: normalizeRating(byKey.clarity),
+    technicalDepth: normalizeRating(byKey.technicaldepth ?? byKey.technical ?? byKey.depth),
+    confidence: normalizeRating(byKey.confidence),
+    pace: normalizeRating(byKey.pace ?? byKey.pacing),
+  };
+  const comment = byKey.comment ?? byKey.remark ?? byKey.reaction;
+  if (typeof comment === "string" && comment.trim()) out.comment = comment.trim();
+  return out;
+}
+
 const FEEDBACK_SCHEMA =
   '"feedback": {"clarity": "Weak"|"Average"|"Good"|"Excellent", ' +
   '"technicalDepth": "Weak"|"Average"|"Good"|"Excellent", ' +
@@ -263,7 +301,7 @@ router.post("/answer", async (req, res) => {
 
   try {
     const result = await askNextOrFinish(session);
-    const feedback = result.feedback || {};
+    const feedback = normalizeFeedback(result.feedback);
     session.transcript[session.transcript.length - 1].feedback = feedback;
 
     if (result.done) {

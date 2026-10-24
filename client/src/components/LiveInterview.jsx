@@ -48,6 +48,25 @@ function scoreColor(score) {
   return "text-signal-rose";
 }
 
+/** jsPDF's built-in Helvetica only supports Latin-1/WinAnsi. Any other char
+ * (non-breaking hyphen, smart punctuation, zero-width/narrow spaces, emoji)
+ * makes the whole line render with huge letter-spacing. Normalise first. */
+function pdfSafe(text) {
+  return String(text ?? "")
+    .replace(/[\u2010-\u2015\u2212]/g, "-")
+    .replace(/[\u2018\u2019\u201A\u201B]/g, "'")
+    .replace(/[\u201C\u201D\u201E\u201F]/g, '"')
+    .replace(/\u2026/g, "...")
+    .replace(/[\u2022\u25CF\u25AA]/g, "-")
+    .replace(/[\u00A0\u1680\u2000-\u200A\u202F\u205F\u3000]/g, " ")
+    .replace(/[\u200B-\u200D\u2060\uFEFF]/g, "")
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^\x09\x0A\x0D\x20-\x7E\xA0-\xFF]/g, "")
+    .replace(/[ \t]+/g, " ")
+    .trim();
+}
+
 /** Builds a formatted PDF of the interview report + full transcript and triggers a download. */
 async function downloadReportPdf({ report, transcript, elapsed, role, experience }) {
   const { jsPDF } = await import("jspdf");
@@ -70,7 +89,7 @@ async function downloadReportPdf({ report, transcript, elapsed, role, experience
     doc.setFont("helvetica", "bold");
     doc.setFontSize(size);
     doc.setTextColor(28, 24, 40);
-    doc.text(text, margin, y);
+    doc.text(pdfSafe(text), margin, y);
     y += size + 10;
   };
 
@@ -79,7 +98,7 @@ async function downloadReportPdf({ report, transcript, elapsed, role, experience
     doc.setFont("helvetica", "normal");
     doc.setFontSize(size);
     doc.setTextColor(...color);
-    const lines = doc.splitTextToSize(text, maxWidth);
+    const lines = doc.splitTextToSize(pdfSafe(text), maxWidth);
     lines.forEach((line) => {
       ensureSpace(size + 5);
       doc.text(line, margin, y);
@@ -152,7 +171,7 @@ async function downloadReportPdf({ report, transcript, elapsed, role, experience
     addParagraph(`Your answer: ${t.answer}`, 10, [70, 68, 84]);
     if (t.feedback) {
       const dims = FEEDBACK_DIMENSIONS.map(
-        ([key, label]) => `${label}: ${t.feedback[key] || "—"}`
+        ([key, label]) => `${label}: ${t.feedback[key] || "-"}`
       ).join("    ");
       addParagraph(dims, 9, [130, 128, 140]);
       if (t.feedback.comment) {
@@ -251,6 +270,12 @@ export default function LiveInterview({ models, model, onModelChange }) {
     }
     let cancelled = false;
     setCameraError(null);
+    const attachStream = () => {
+      const v = videoRef.current;
+      if (!v || !streamRef.current) return;
+      if (v.srcObject !== streamRef.current) v.srcObject = streamRef.current;
+      v.play?.().catch(() => {});
+    };
     navigator.mediaDevices
       ?.getUserMedia({ video: true, audio: false })
       .then((stream) => {
@@ -259,7 +284,7 @@ export default function LiveInterview({ models, model, onModelChange }) {
           return;
         }
         streamRef.current = stream;
-        if (videoRef.current) videoRef.current.srcObject = stream;
+        attachStream();
       })
       .catch(() => {
         if (!cancelled) setCameraError("Camera unavailable — continuing without video.");
@@ -866,7 +891,8 @@ export default function LiveInterview({ models, model, onModelChange }) {
                     autoPlay
                     muted
                     playsInline
-                    className="w-full h-full object-cover"
+                    onLoadedMetadata={(e) => e.currentTarget.play?.().catch(() => {})}
+                    className="w-full h-full object-cover -scale-x-100"
                   />
                   <span className="absolute top-1 left-1 text-[9px] bg-black/50 text-white px-1.5 py-0.5 rounded">
                     You
