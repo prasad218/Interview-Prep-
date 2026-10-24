@@ -57,15 +57,16 @@ function buildPrompt(profile) {
   );
 }
 
-// POST /api/roadmap/generate
-router.post("/generate", requireAuth, async (req, res) => {
-  const user = req.user;
-  if (!user.profile) {
-    return res.status(400).json({
-      error: "Complete your prep profile (resume, role, timeline) before generating a roadmap.",
-    });
-  }
+// Generating a roadmap can take a minute or more on a slow model. Holding one
+// HTTP request open that long gets cut off by the host or the browser (the
+// user sees "Failed to fetch"). So /generate only STARTS the work and answers
+// at once; the page then checks /status every few seconds. Job state is kept
+// in memory (one per user); if the server restarts mid-job the page is told
+// to try again.
+const jobs = new Map(); // userId -> { status, startedAt, error? }
+const JOB_MAX_MS = 6 * 60 * 1000;
 
+async function runRoadmapJob(user) {
   try {
     const messages = [
       {
@@ -76,13 +77,13 @@ router.post("/generate", requireAuth, async (req, res) => {
       },
       { role: "user", content: buildPrompt(user.profile) },
     ];
-    const model = getModel();
     const parsed = await chatCompletionJSON({
-      model,
+      model: getModel(),
       messages,
       temperature: 0.6,
       maxTokens: 6500,
       retries: 2,
+      reasoningEffort: "minimal",
     });
 
     const roadmap = {
@@ -94,13 +95,45 @@ router.post("/generate", requireAuth, async (req, res) => {
       generatedAt: new Date().toISOString(),
       completedRanges: [],
     };
-
-    const updated = await db.updateUser(user.id, { roadmap });
-    res.json({ roadmap: updated.roadmap });
+    await db.updateUser(user.id, { roadmap });
+    jobs.set(user.id, { status: "done", startedAt: jobs.get(user.id)?.startedAt });
   } catch (err) {
     console.error("Roadmap generation error:", err.message);
-    res.status(500).json({ error: err.message || "Failed to generate the roadmap." });
+    jobs.set(user.id, {
+      status: "error",
+      startedAt: jobs.get(user.id)?.startedAt,
+      error: err.message || "Failed to generate the roadmap.",
+    });
   }
+}
+
+// POST /api/roadmap/generate  -> starts a job, returns immediately
+router.post("/generate", requireAuth, (req, res) => {
+  const user = req.user;
+  if (!user.profile) {
+    return res.status(400).json({
+      error: "Complete your prep profile (resume, role, timeline) before generating a roadmap.",
+    });
+  }
+  const existing = jobs.get(user.id);
+  const stillRunning =
+    existing?.status === "running" && Date.now() - existing.startedAt < JOB_MAX_MS;
+  if (!stillRunning) {
+    jobs.set(user.id, { status: "running", startedAt: Date.now() });
+    runRoadmapJob(user); // deliberately not awaited
+  }
+  res.status(202).json({ status: "running" });
+});
+
+// GET /api/roadmap/status  -> { status: "running" | "done" | "error" | "none", error? }
+router.get("/status", requireAuth, (req, res) => {
+  const job = jobs.get(req.user.id);
+  if (!job) return res.json({ status: "none" });
+  if (job.status === "running" && Date.now() - job.startedAt > JOB_MAX_MS) {
+    jobs.delete(req.user.id);
+    return res.json({ status: "error", error: "The roadmap took too long. Please try again." });
+  }
+  res.json({ status: job.status, ...(job.error ? { error: job.error } : {}) });
 });
 
 // GET /api/roadmap

@@ -304,6 +304,7 @@ export async function chatCompletionJSON({
   retries = 1,
   timeoutMs,
   budgetMs,
+  reasoningEffort,
 }) {
   const started = Date.now();
   const budget = budgetMs ?? budgetDefault();
@@ -313,7 +314,7 @@ export async function chatCompletionJSON({
   let lastError;
   let attemptMessages = messages;
   let tokens = maxTokens;
-  let effort;
+  let effort = reasoningEffort;
 
   for (let attempt = 0; attempt <= retries; attempt++) {
     const remaining = budget - (Date.now() - started);

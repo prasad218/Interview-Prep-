@@ -139,6 +139,46 @@ export function unsupportedForPdf(text) {
 
 const stripMd = (s) => s.replace(/\*\*(.+?)\*\*/g, "$1").replace(/`/g, "");
 
+const DATE_RE =
+  /(\b(19|20)\d{2}\b|\bpresent\b|\bcurrent\b|\b(jan|feb|mar|apr|may|jun|jul|aug|sep|sept|oct|nov|dec)[a-z]*\b)/i;
+
+/**
+ * One fixed styling rule for every non-bullet line, whatever the model did
+ * with asterisks:
+ *   "Role | Company | Dates"   -> Role bold, Company regular, Dates on the right
+ *   "Languages: C, Java"       -> label bold, rest regular
+ *   short line, no full stop   -> bold (a project / degree title)
+ *   anything else              -> regular paragraph (summary text)
+ */
+function styleLine(t) {
+  if (t.includes("|")) {
+    const parts = t.split("|").map((p) => p.trim()).filter(Boolean);
+    let dates = "";
+    if (parts.length > 1 && DATE_RE.test(parts[parts.length - 1]) && parts[parts.length - 1].length <= 32) {
+      dates = parts.pop();
+    }
+    const [title, ...rest] = parts;
+    const runs = [{ text: title || "", bold: true }];
+    if (rest.length) runs.push({ text: "  |  " + rest.join("  |  "), bold: false });
+    return { type: "line", runs, dates };
+  }
+  const label = t.match(/^([A-Za-z][A-Za-z0-9 &/+.,()-]{1,40}):\s+(\S.*)$/);
+  if (label && label[1].split(" ").length <= 6) {
+    return {
+      type: "line",
+      runs: [
+        { text: label[1] + ":", bold: true },
+        { text: " " + label[2], bold: false },
+      ],
+      dates: "",
+    };
+  }
+  if (t.length <= 90 && !/[.!?]$/.test(t)) {
+    return { type: "line", runs: [{ text: t, bold: true }], dates: "" };
+  }
+  return { type: "line", runs: [{ text: t, bold: false }], dates: "" };
+}
+
 /**
  * Parses resume text into blocks:
  *  name | contact | heading | bullet | line | space
@@ -168,7 +208,9 @@ export function parseResume(text) {
       continue;
     }
     if (/^[-*•]\s+/.test(t)) {
-      blocks.push({ type: "bullet", runs: inlineRuns(t.replace(/^[-*•]\s+/, "")) });
+      // Bullets are always plain text. (The model's stray **bold** inside
+      // bullets is what made some words bold and others not.)
+      blocks.push({ type: "bullet", runs: [{ text: stripMd(t.replace(/^[-*•]\s+/, "")), bold: false }] });
       expectContact = false;
       continue;
     }
@@ -177,7 +219,7 @@ export function parseResume(text) {
       expectContact = false;
       continue;
     }
-    blocks.push({ type: "line", runs: inlineRuns(t) });
+    blocks.push(styleLine(stripMd(t)));
   }
 
   // Collapse repeated blank lines and trim leading/trailing ones.
@@ -212,6 +254,7 @@ export async function buildDocx(text) {
     TextRun,
     AlignmentType,
     BorderStyle,
+    TabStopType,
   } = await import("docx");
 
   const FONT = "Calibri";
@@ -268,9 +311,17 @@ export async function buildDocx(text) {
           new Paragraph({
             spacing: { before: 80, after: 40 },
             keepNext: true,
-            children: b.runs.map(
-              (r) => new TextRun({ text: r.text, bold: r.bold, size: 21, font: FONT })
-            ),
+            ...(b.dates
+              ? { tabStops: [{ type: TabStopType.RIGHT, position: 10106 }] }
+              : {}),
+            children: [
+              ...b.runs.map(
+                (r) => new TextRun({ text: r.text, bold: r.bold, size: 21, font: FONT })
+              ),
+              ...(b.dates
+                ? [new TextRun({ text: "\t" + b.dates, size: 20, font: FONT, color: "555555" })]
+                : []),
+            ],
           })
         );
         break;
@@ -422,7 +473,17 @@ export async function buildPdf(text) {
     } else if (b.type === "line") {
       ensure(16);
       y += 3;
-      drawRuns(b.runs, M, 10.5, 13.5, maxW);
+      if (b.dates) {
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(10);
+        doc.setTextColor(90);
+        const dw = doc.getTextWidth(b.dates);
+        doc.text(b.dates, pageW - M, y + 10.5, { align: "right" });
+        doc.setTextColor(0);
+        drawRuns(b.runs, M, 10.5, 13.5, maxW - dw - 12);
+      } else {
+        drawRuns(b.runs, M, 10.5, 13.5, maxW);
+      }
     } else if (b.type === "space") {
       y += 3;
     }

@@ -63,9 +63,9 @@ function systemPersona() {
   );
 }
 
-function resumeContext(session) {
+function resumeContext(session, limit = 6000) {
   return (
-    `Candidate resume:\n"""\n${session.resumeText.slice(0, 6000)}\n"""\n\n` +
+    `Candidate resume:\n"""\n${session.resumeText.slice(0, limit)}\n"""\n\n` +
     `Target role: ${session.role || "the role implied by the resume"}\n` +
     `Candidate experience level: ${session.experience || "infer from resume"}\n` +
     `Interview focus areas selected by the candidate: ${session.focusAreas.join(", ")}\n` +
@@ -149,10 +149,11 @@ async function askFirstQuestion(session) {
     model: session.model,
     messages,
     temperature: 0.7,
-    maxTokens: 1200,
+    maxTokens: 800,
     retries: 1,
-    timeoutMs: 45000,
-    budgetMs: 90000,
+    timeoutMs: 40000,
+    budgetMs: 85000,
+    reasoningEffort: "minimal",
   });
   return {
     question:
@@ -172,7 +173,7 @@ async function askNextOrFinish(session) {
     {
       role: "user",
       content:
-        resumeContext(session) +
+        resumeContext(session, 3500) +
         `\nInterview so far (${askedCount}/${session.numQuestions} question(s) answered):\n` +
         transcriptSummary(session) +
         `\n\nFirst, evaluate ONLY the candidate's most recent answer (the last Q&A above) on the four ` +
@@ -197,10 +198,12 @@ async function askNextOrFinish(session) {
     model: session.model,
     messages,
     temperature: 0.65,
-    maxTokens: 2500,
+    maxTokens: isLast ? 2200 : 900,
     retries: 1,
-    timeoutMs: 45000,
-    budgetMs: 90000,
+    timeoutMs: 40000,
+    budgetMs: 85000,
+    // Less hidden "thinking" = much faster replies on free models.
+    reasoningEffort: "minimal",
   });
 }
 

@@ -70,11 +70,37 @@ export async function saveProfile(payload) {
 // --------------------------------------------------------------- Roadmap
 
 export async function generateRoadmap() {
-  const res = await fetch(`${BASE}/roadmap/generate`, {
+  // The server starts the work and answers straight away; we then check on it
+  // every few seconds. (One long request would be cut off by the host.)
+  const start = await fetch(`${BASE}/roadmap/generate`, {
     method: "POST",
     headers: authHeaders(),
   });
-  return json(res);
+  await json(start);
+
+  const deadline = Date.now() + 6 * 60 * 1000;
+  let networkFailures = 0;
+  while (Date.now() < deadline) {
+    await new Promise((r) => setTimeout(r, 3000));
+    let st;
+    try {
+      st = await json(await fetch(`${BASE}/roadmap/status`, { headers: authHeaders() }));
+      networkFailures = 0;
+    } catch (err) {
+      // A dropped connection or a brief server restart: keep trying a few times.
+      if (err.status) throw err; // a real server answer (e.g. 401)
+      if (++networkFailures >= 5) {
+        throw new Error("Lost connection to the server. Please check your internet and try again.");
+      }
+      continue;
+    }
+    if (st.status === "done") return json(await fetch(`${BASE}/roadmap`, { headers: authHeaders() }));
+    if (st.status === "error") throw new Error(st.error || "Failed to generate the roadmap.");
+    if (st.status === "none") {
+      throw new Error("The server restarted while building your roadmap. Please try again.");
+    }
+  }
+  throw new Error("The roadmap is taking too long. Please try again.");
 }
 
 export async function fetchRoadmap() {
