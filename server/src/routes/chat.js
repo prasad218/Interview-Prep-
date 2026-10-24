@@ -76,6 +76,14 @@ router.post("/", requireAuth, async (req, res) => {
         "- If they only want feedback or ask what to improve: give specific " +
         "points (weak phrasing, missing metrics, structure, ATS " +
         "formatting) with example rewritten lines.\n" +
+        "- If they list specific corrections or changes (e.g. \"change my " +
+        "phone number\", \"add this project\", \"remove the objective\", " +
+        "\"make it one page\", \"fix the typos\"), APPLY EXACTLY those " +
+        "changes to the resume and output the ENTIRE updated resume in a " +
+        "```resume block. Leave everything they did not mention unchanged. " +
+        "Do not ask for confirmation first and do not only describe the " +
+        "changes. Always base follow-up corrections on your most recent " +
+        "```resume block in this conversation, not the original upload.\n" +
         "- If they ask you to update, rewrite, improve, polish, tailor, or " +
         "fix the resume (or ask for the complete/updated/final resume), " +
         "DO THE WORK: output the ENTIRE updated resume from start to " +
