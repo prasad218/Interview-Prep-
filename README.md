@@ -7,9 +7,9 @@
   &nbsp;|&nbsp;
   <a href="#how-it-works">How it works</a>
   &nbsp;|&nbsp;
-  <a href="#getting-started">Getting started</a>
+  <a href="#features">Features</a>
   &nbsp;|&nbsp;
-  <a href="#api-reference">API</a>
+  <a href="#tech-stack">Tech stack</a>
 </p>
 
 # LevelUp: Make your move
@@ -95,106 +95,12 @@ interview-prep/
 
 ---
 
-## Getting started
-
-### 1. Get an OpenRouter API key
-
-Sign up at <https://openrouter.ai> and create a key at <https://openrouter.ai/keys>. Add credit, or use a free-tier model, so requests succeed.
-
-### 2. Configure your environment
-
-```bash
-cd server
-cp .env.example .env
-```
-
-Open `server/.env` and fill in:
-
-```env
-OPENROUTER_API_KEY=sk-or-v1-...
-JWT_SECRET=<a long random string, e.g. output of: openssl rand -hex 32>
-```
-
-- `JWT_SECRET` is required. It signs login sessions, and changing it later logs everyone out.
-- `DEFAULT_MODEL` is optional. Set any OpenRouter model id (see <https://openrouter.ai/models>).
-- `GOOGLE_CLIENT_ID` is optional and only needed for the "Sign in with Google" button (see below).
-
-**Client environment (optional)**
-
-```bash
-cd client
-cp .env.example .env
-```
-
-Leave `VITE_API_URL` empty for local development, since Vite proxies `/api` to the server. In production, set it to your deployed server's URL.
-
-### 3. Install dependencies
-
-From the project root:
-
-```bash
-npm run install:all
-```
-
-### 4. Run it
-
-```bash
-npm run dev
-```
-
-The API starts on **http://localhost:3001** and the UI on **http://localhost:5173**. Open the UI URL in your browser.
-
-### Google sign-in setup (optional)
-
-1. Go to <https://console.cloud.google.com/apis/credentials> and create an **OAuth 2.0 Client ID** (type: Web application).
-2. Under **Authorized JavaScript origins**, add `http://localhost:5173` and your production URL once deployed.
-3. Copy the client ID into both `server/.env` (`GOOGLE_CLIENT_ID`) and `client/.env` (`VITE_GOOGLE_CLIENT_ID`).
-4. Restart both dev servers.
-
-Without this, email and password sign-in still works fully.
-
----
-
 ## Data storage note
 
 Accounts, profiles, roadmaps, and test results are stored in a flat `server/data/db.json` file. That is fine for local development and small deployments, but:
 
 - **It is not production-ready for real users as-is.** On hosts with an ephemeral filesystem (for example Render's free tier without a persistent disk), all data is wiped on every redeploy or restart.
 - Before opening LevelUp to real users, attach a persistent disk or migrate `server/src/db.js` to a real database such as Postgres. The functions there are already isolated to make that swap straightforward.
-
----
-
-## API reference
-
-Routes marked with a check require an `Authorization: Bearer <token>` header.
-
-| Method | Route | Auth | Description |
-| ------ | ----- | :--: | ----------- |
-| POST | `/api/auth/signup` | | `{ name, email, password }` |
-| POST | `/api/auth/login` | | `{ email, password }` |
-| POST | `/api/auth/google` | | `{ credential }` (Google ID token) |
-| GET | `/api/auth/me` | ✓ | Current user |
-| PATCH | `/api/auth/profile` | ✓ | `{ resumeText, targetRole, daysToPlacement, dailyHours, targetCompanies }` |
-| POST | `/api/roadmap/generate` | ✓ | Generate or regenerate the roadmap from the saved profile |
-| GET | `/api/roadmap` | ✓ | Get the saved roadmap |
-| PATCH | `/api/roadmap/progress` | ✓ | `{ rangeLabel, completed }` to toggle a schedule block |
-| POST | `/api/test/start` | ✓ | Start a role-based or company-style test |
-| POST | `/api/test/submit` | ✓ | `{ testId, answers }`: grades and returns a certificate if passed |
-| GET | `/api/test/results` | ✓ | Past test result summaries |
-| GET | `/api/conversations` | | List chat conversations |
-| GET | `/api/conversations/:id` | | Get one conversation with messages |
-| POST | `/api/conversations` | | Create a conversation `{ model }` |
-| PATCH | `/api/conversations/:id` | | Rename `{ title }` |
-| DELETE | `/api/conversations/:id` | | Delete a conversation |
-| POST | `/api/chat` | | Send a message and stream the reply (SSE) |
-| GET | `/api/models` | | List models available via OpenRouter |
-| POST | `/api/interview/extract` | | Extract text from an uploaded resume (multipart, field `resume`) |
-| POST | `/api/interview/generate` | | Generate a Q&A set `{ resumeText, role, experience, numQuestions, focusAreas, model }` |
-| POST | `/api/live-interview/start` | | Start a live mock interview session |
-| POST | `/api/live-interview/answer` | | Submit an answer, get feedback and the next question |
-| POST | `/api/live-interview/end` | | End early and get a wrap-up report |
-
-The Roadmap and Test Center features are fully account-scoped. The chat, question bank, and live interview features predate accounts and are not yet tied to a specific user.
 
 ---
 
