@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext.jsx";
 import * as api from "../api/client.js";
 import { setToken } from "../api/authToken.js";
@@ -7,6 +7,22 @@ import ProgressRing from "./ProgressRing.jsx";
 import InstallAppBanner from "./InstallAppBanner.jsx";
 import WatchDemo from "./WatchDemo.jsx";
 import { Map, Mic, Building2, Award, KeyRound, Check, ArrowRight } from "lucide-react";
+
+// True when the window is at least `px` wide (updates on resize).
+function useMinWidth(px) {
+  const query = `(min-width: ${px}px)`;
+  const [matches, setMatches] = useState(
+    () => typeof window !== "undefined" && window.matchMedia(query).matches
+  );
+  useEffect(() => {
+    const mq = window.matchMedia(query);
+    const onChange = (e) => setMatches(e.matches);
+    setMatches(mq.matches);
+    mq.addEventListener("change", onChange);
+    return () => mq.removeEventListener("change", onChange);
+  }, [query]);
+  return matches;
+}
 
 const FEATURES = [
   {
@@ -149,6 +165,8 @@ function SavedCodeScreen({ code, onContinue }) {
 
 export default function AuthScreen({ onAdminLogin }) {
   const { login, setUser } = useAuth();
+  // On wide screens the video lives in the hero panel; otherwise in the form panel.
+  const wide = useMinWidth(1536);
   const [mode, setMode] = useState("login"); // "login" | "signup"
   const [loginCode, setLoginCode] = useState("");
   const [password, setPassword] = useState("");
@@ -215,8 +233,11 @@ export default function AuthScreen({ onAdminLogin }) {
             interviews and company-specific tests, plus a certificate when
             you're ready.
           </p>
-          <div className="mt-8">
-            <ProductPreview />
+          <div className="mt-8 flex items-start gap-6">
+            <div className="flex-1 min-w-0">
+              <ProductPreview />
+            </div>
+            {wide && <WatchDemo variant="hero" />}
           </div>
         </div>
 
@@ -356,7 +377,7 @@ export default function AuthScreen({ onAdminLogin }) {
           </p>
 
           <InstallAppBanner className="mt-6" />
-          <WatchDemo className="mt-3" />
+          {!wide && <WatchDemo className="mt-3" />}
 
           {onAdminLogin && (
             <button
