@@ -224,22 +224,36 @@ export default function AuthScreen({ onAdminLogin }) {
           </span>
         </div>
 
-        <div>
-          <h1 className="font-display font-extrabold text-4xl xl:text-5xl 2xl:text-6xl leading-[1.05] text-ink-100">
-            Make your move.
-          </h1>
-          <p className="text-ink-300 text-[15px] mt-4 max-w-md leading-relaxed">
-            Upload your resume once. Get a day-by-day roadmap, live AI mock
-            interviews and company-specific tests, plus a certificate when
-            you're ready.
-          </p>
-          <div className="mt-8 flex items-center gap-5">
+        {wide ? (
+          /* Wide screens: big marketing video beside the headline. */
+          <div className="flex items-center gap-8 min-h-0">
             <div className="flex-1 min-w-0">
+              <h1 className="font-display font-extrabold text-4xl xl:text-5xl 2xl:text-6xl leading-[1.05] text-ink-100">
+                Make your move.
+              </h1>
+              <p className="text-ink-300 text-[15px] mt-4 max-w-md leading-relaxed">
+                Upload your resume once. Get a day-by-day roadmap, live AI mock
+                interviews and company-specific tests, plus a certificate when
+                you're ready.
+              </p>
+            </div>
+            <WatchDemo variant="hero" />
+          </div>
+        ) : (
+          <div>
+            <h1 className="font-display font-extrabold text-4xl xl:text-5xl 2xl:text-6xl leading-[1.05] text-ink-100">
+              Make your move.
+            </h1>
+            <p className="text-ink-300 text-[15px] mt-4 max-w-md leading-relaxed">
+              Upload your resume once. Get a day-by-day roadmap, live AI mock
+              interviews and company-specific tests, plus a certificate when
+              you're ready.
+            </p>
+            <div className="mt-8">
               <ProductPreview />
             </div>
-            {wide && <WatchDemo variant="hero" />}
           </div>
-        </div>
+        )}
 
         <div>
           <ul className="flex flex-wrap gap-x-6 gap-y-2.5">
