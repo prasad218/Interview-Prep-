@@ -85,7 +85,7 @@ export default function WatchDemo({ className = "", variant = "card" }) {
     return (
       <>
         <div
-          className={`relative w-[194px] shrink-0 aspect-[9/16] rounded-2xl overflow-hidden bg-black border border-accent/30 shadow-glow ${className}`}
+          className={`relative w-[150px] 2xl:w-[194px] shrink-0 aspect-[9/16] rounded-2xl overflow-hidden bg-black border border-accent/30 shadow-glow ${className}`}
         >
           <video
             ref={videoRef}

@@ -166,7 +166,7 @@ function SavedCodeScreen({ code, onContinue }) {
 export default function AuthScreen({ onAdminLogin }) {
   const { login, setUser } = useAuth();
   // On wide screens the video lives in the hero panel; otherwise in the form panel.
-  const wide = useMinWidth(1536);
+  const wide = useMinWidth(1280);
   const [mode, setMode] = useState("login"); // "login" | "signup"
   const [loginCode, setLoginCode] = useState("");
   const [password, setPassword] = useState("");
@@ -233,7 +233,7 @@ export default function AuthScreen({ onAdminLogin }) {
             interviews and company-specific tests, plus a certificate when
             you're ready.
           </p>
-          <div className="mt-8 flex items-start gap-6">
+          <div className="mt-8 flex items-center gap-5">
             <div className="flex-1 min-w-0">
               <ProductPreview />
             </div>
