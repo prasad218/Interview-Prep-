@@ -4,6 +4,7 @@ import * as api from "../api/client.js";
 import { setToken } from "../api/authToken.js";
 import logo from "../assets/logo.png";
 import ProgressRing from "./ProgressRing.jsx";
+import InstallAppBanner from "./InstallAppBanner.jsx";
 import { Map, Mic, Building2, Award, KeyRound, Check, ArrowRight } from "lucide-react";
 
 const FEATURES = [
@@ -352,6 +353,8 @@ export default function AuthScreen({ onAdminLogin }) {
             third-party AI services to generate your results. Avoid including
             ID numbers or passwords.
           </p>
+
+          <InstallAppBanner className="mt-6" />
 
           {onAdminLogin && (
             <button
