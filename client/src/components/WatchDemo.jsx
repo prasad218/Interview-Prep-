@@ -1,37 +1,118 @@
-import { useEffect, useState } from "react";
-import { Play, X } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { Volume2, VolumeX, Maximize2, X } from "lucide-react";
 
 const VIDEO_URL = "/LevelUp-demo.mp4";
 const POSTER_URL = "/LevelUp-demo-poster.jpg";
 
 /**
- * "Watch demo" link that opens the promo video in a pop-up player.
- * The video file only downloads when the pop-up is opened.
+ * Marketing video card. Plays automatically (muted, looping) right on the
+ * page. Browsers block autoplay WITH sound, so the viewer taps the speaker
+ * button to turn sound on. "Full screen" opens a bigger player with the
+ * normal controls (volume slider, seek, pause).
  */
 export default function WatchDemo({ className = "" }) {
+  const videoRef = useRef(null);
+  const [muted, setMuted] = useState(true);
   const [open, setOpen] = useState(false);
+
+  // Respect "reduce motion": don't autoplay for people who turned it off.
+  const reduceMotion =
+    typeof window !== "undefined" &&
+    window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+
+  const toggleSound = () => {
+    const v = videoRef.current;
+    if (!v) return;
+    const next = !muted;
+    v.muted = next;
+    if (!next) {
+      v.currentTime = 0; // start from the beginning once sound is on
+      v.play().catch(() => {});
+    }
+    setMuted(next);
+  };
+
+  const openFull = () => {
+    videoRef.current?.pause();
+    setOpen(true);
+  };
+
+  const closeFull = () => {
+    setOpen(false);
+    videoRef.current?.play().catch(() => {});
+  };
 
   useEffect(() => {
     if (!open) return;
-    const onKey = (e) => e.key === "Escape" && setOpen(false);
+    const onKey = (e) => e.key === "Escape" && closeFull();
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [open]);
 
   return (
     <>
-      <button
-        onClick={() => setOpen(true)}
-        className={`inline-flex items-center justify-center gap-1.5 text-xs font-medium text-accent-soft hover:text-ink-100 transition-colors ${className}`}
+      <div
+        className={`flex items-center gap-4 rounded-2xl border border-base-600 bg-base-850/80 p-3 ${className}`}
       >
-        <Play className="w-3.5 h-3.5" strokeWidth={2.25} fill="currentColor" />
-        Watch the 30-second demo
-      </button>
+        <div className="relative w-[104px] shrink-0 aspect-[9/16] rounded-xl overflow-hidden bg-black shadow-card">
+          <video
+            ref={videoRef}
+            src={VIDEO_URL}
+            poster={POSTER_URL}
+            autoPlay={!reduceMotion}
+            muted
+            loop
+            playsInline
+            preload="metadata"
+            className="w-full h-full object-cover"
+          />
+          <button
+            onClick={toggleSound}
+            aria-label={muted ? "Turn sound on" : "Turn sound off"}
+            className="absolute bottom-1.5 right-1.5 w-8 h-8 rounded-full bg-black/60 backdrop-blur border border-white/20 text-white hover:bg-black/80 flex items-center justify-center transition-colors"
+          >
+            {muted ? (
+              <VolumeX className="w-4 h-4" strokeWidth={2.25} />
+            ) : (
+              <Volume2 className="w-4 h-4" strokeWidth={2.25} />
+            )}
+          </button>
+        </div>
+
+        <div className="min-w-0 text-left">
+          <p className="font-display font-semibold text-sm text-ink-100">
+            See LevelUp in action
+          </p>
+          <p className="text-[11px] text-ink-500 leading-snug mt-1">
+            30 seconds: AI resume rewrite, live mock interview and more.
+          </p>
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 mt-3">
+            <button
+              onClick={toggleSound}
+              className="inline-flex items-center gap-1.5 text-xs font-semibold text-accent-soft hover:text-ink-100 transition-colors"
+            >
+              {muted ? (
+                <Volume2 className="w-3.5 h-3.5" strokeWidth={2.25} />
+              ) : (
+                <VolumeX className="w-3.5 h-3.5" strokeWidth={2.25} />
+              )}
+              {muted ? "Play with sound" : "Mute"}
+            </button>
+            <button
+              onClick={openFull}
+              className="inline-flex items-center gap-1.5 text-xs font-medium text-ink-500 hover:text-ink-100 transition-colors"
+            >
+              <Maximize2 className="w-3.5 h-3.5" strokeWidth={2.25} />
+              Full screen
+            </button>
+          </div>
+        </div>
+      </div>
 
       {open && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4"
-          onClick={() => setOpen(false)}
+          onClick={closeFull}
           role="dialog"
           aria-modal="true"
           aria-label="LevelUp demo video"
@@ -46,11 +127,10 @@ export default function WatchDemo({ className = "" }) {
               controls
               autoPlay
               playsInline
-              preload="metadata"
               className="w-full h-full rounded-2xl bg-black object-contain shadow-glow"
             />
             <button
-              onClick={() => setOpen(false)}
+              onClick={closeFull}
               aria-label="Close video"
               className="absolute -top-3 -right-3 w-8 h-8 rounded-full bg-base-800 border border-base-600 text-ink-100 hover:bg-base-700 flex items-center justify-center"
             >

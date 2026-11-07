@@ -356,7 +356,7 @@ export default function AuthScreen({ onAdminLogin }) {
           </p>
 
           <InstallAppBanner className="mt-6" />
-          <WatchDemo className="w-full mt-3" />
+          <WatchDemo className="mt-3" />
 
           {onAdminLogin && (
             <button
