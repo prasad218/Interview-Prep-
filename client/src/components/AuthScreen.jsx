@@ -232,9 +232,7 @@ export default function AuthScreen({ onAdminLogin }) {
                 Make your move.
               </h1>
               <p className="text-ink-300 text-[15px] mt-4 max-w-md leading-relaxed">
-                Upload your resume once. Get a day-by-day roadmap, live AI mock
-                interviews and company-specific tests, plus a certificate when
-                you're ready.
+                Upload your resume once. Get a personalized day-by-day roadmap, practice with live AI mock interviews, take company-specific tests, and earn a certificate when you're ready.
               </p>
             </div>
             <WatchDemo variant="hero" />
@@ -245,9 +243,7 @@ export default function AuthScreen({ onAdminLogin }) {
               Make your move.
             </h1>
             <p className="text-ink-300 text-[15px] mt-4 max-w-md leading-relaxed">
-              Upload your resume once. Get a day-by-day roadmap, live AI mock
-              interviews and company-specific tests, plus a certificate when
-              you're ready.
+              Upload your resume once. Get a personalized day-by-day roadmap, practice with live AI mock interviews, take company-specific tests, and earn a certificate when you're ready.
             </p>
             <div className="mt-8">
               <ProductPreview />
