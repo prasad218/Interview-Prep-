@@ -1,5 +1,6 @@
 import logo from "../assets/logo.png";
 import InstallAppBanner from "./InstallAppBanner.jsx";
+import WatchDemo from "./WatchDemo.jsx";
 import { useAuth } from "../context/AuthContext.jsx";
 import { ArrowLeft, Zap, Map, Sparkles } from "lucide-react";
 
@@ -100,6 +101,7 @@ export default function PracticeChoice({ onQuickPractice, onBuildRoadmap, onOpen
         </div>
 
         <InstallAppBanner className="w-full mt-6 text-left" />
+        <WatchDemo className="mt-3" />
 
         <div className="brand-badge mt-8">
           <span className="brand-dot" />

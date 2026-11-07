@@ -50,13 +50,13 @@ export default function InstallAppBanner({ className = "" }) {
 
   return (
     <div
-      className={`relative flex items-center gap-3 rounded-2xl border border-accent/30 bg-brand-gradient-soft px-4 py-3 ${className}`}
+      className={`flex items-center gap-2.5 rounded-2xl border border-accent/30 bg-brand-gradient-soft pl-4 pr-2 py-3 ${className}`}
     >
       <div className="w-10 h-10 shrink-0 rounded-xl overflow-hidden shadow-glow-sm bg-base-900">
         <img src={logo} alt="" className="w-full h-full object-contain" />
       </div>
 
-      <div className="flex-1 min-w-0 pr-5">
+      <div className="flex-1 min-w-0">
         <p className="flex items-center gap-1.5 font-display font-semibold text-[13px] text-ink-100">
           <Smartphone className="w-3.5 h-3.5 text-accent-soft" strokeWidth={2.25} />
           Get the LevelUp Android app
@@ -78,7 +78,7 @@ export default function InstallAppBanner({ className = "" }) {
       <button
         onClick={dismiss}
         aria-label="Dismiss"
-        className="absolute top-1.5 right-1.5 p-1 text-ink-500 hover:text-ink-100 transition-colors"
+        className="shrink-0 p-1.5 rounded-md text-ink-500 hover:text-ink-100 hover:bg-white/5 transition-colors"
       >
         <X className="w-3.5 h-3.5" strokeWidth={2} />
       </button>

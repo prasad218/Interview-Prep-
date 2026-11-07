@@ -5,6 +5,7 @@ import { setToken } from "../api/authToken.js";
 import logo from "../assets/logo.png";
 import ProgressRing from "./ProgressRing.jsx";
 import InstallAppBanner from "./InstallAppBanner.jsx";
+import WatchDemo from "./WatchDemo.jsx";
 import { Map, Mic, Building2, Award, KeyRound, Check, ArrowRight } from "lucide-react";
 
 const FEATURES = [
@@ -355,6 +356,7 @@ export default function AuthScreen({ onAdminLogin }) {
           </p>
 
           <InstallAppBanner className="mt-6" />
+          <WatchDemo className="w-full mt-3" />
 
           {onAdminLogin && (
             <button
